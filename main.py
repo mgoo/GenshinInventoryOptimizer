@@ -4,7 +4,6 @@ import copy
 
 import pandas as pd
 from pandas import ExcelWriter
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 import multiprocessing
 
@@ -184,7 +183,16 @@ def get_main_stat_value(stat, level):
 
     return main_stat_data[main_stat_map[stat]]["+" + str(level)]
 
+
 def calc_dmg(character, char_artifacts, weapon, char_data):
+    """
+    Calculates a damage number that is used as a heuristic for how good an artifact is
+    :param character:
+    :param char_artifacts:
+    :param weapon:
+    :param char_data:
+    :return:
+    """
     crit_dmg = char_base_crit_dmg + weapon['crit_dmg'] if 'crit_dmg' in weapon.keys() else 0
     crit_rate = char_base_crit_rate + weapon['crit_rate'] if 'crit_rate' in weapon.keys() else 0
     # char data
@@ -224,7 +232,15 @@ def calc_dmg(character, char_artifacts, weapon, char_data):
 
     return (n + c_1_agg + c_2) + (n + c_1 + c_2)
 
+
 def all_possibilities(artifact, rolls_left):
+    """
+    Finds all possible options when leveling an artifact to 20
+    # TODO weight based on new substat!!
+    :param artifact:
+    :param rolls_left:
+    :return:
+    """
     # Exit Condition
     if rolls_left == 0:
         return [artifact]
@@ -263,6 +279,12 @@ def all_possibilities(artifact, rolls_left):
 
 
 def get_value(args):
+    """
+    Gets the damage a character would do with a specific artifact
+    Users only one param as this is made to be run in parallel
+    :param args:
+    :return:
+    """
     option = args['option']
     possible_sub_stats = args['possible_sub_stats']
     fixed_artifacts = args['fixed_artifacts']
@@ -337,7 +359,7 @@ if __name__ == '__main__':
             artifact['avg_value'] = sum(values) / len(values)
             calced_artifacts.append(artifact)
         results[slot_to_optimize] = pd.DataFrame(calced_artifacts)
-    with ExcelWriter('resources/{char}_{set}.xlsx'.format(char=character, set=set)) as writer:
+    with ExcelWriter('output/{char}_{set}.xlsx'.format(char=character, set=set)) as writer:
         for slot, df in results.items():
             df.to_excel(writer, slot)
         pd.concat([frame for frame in results.values()], axis=0).to_excel(writer, 'Combine')
