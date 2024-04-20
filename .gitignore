@@ -1,6 +1,7 @@
 # Custom entries
 resources/account_data/*.json
 output/*.*
+plan
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
