@@ -10,6 +10,8 @@ Name,HP,ATK,DEF,Ascension Attributes,Ascension Stat
 "Beidou","13,049",225,648,Electro DMG,24.0%
 "Bennett","12,397",191,771,Energy Recharge,26.8%
 "Candace","10,874",212,682,HP,24.0%
+"Charlotte","10,766",173,546,ATK,24.0%
+"Chevreuse","11,962",193,605,HP,24.0%
 "Chongyun","10,983",223,648,ATK,24.0%
 "Collei","9,787",199,600,ATK,24.0%
 "Cyno","12,490",318,859,CRIT DMG,24.0%
@@ -20,21 +22,23 @@ Name,HP,ATK,DEF,Ascension Attributes,Ascension Stat
 "Eula","13,225",342,750,CRIT DMG,38.4%
 "Faruzan","9,569",196,627,ATK,24.0%
 "Fischl","9,189",244,593,ATK,24.0%
-"Freminet",12071,254.88,708.46,ATK,24.0%
+"Freminet","12,071",254.88,708.46,ATK,24.0%
+"Furina","15,307",244,696,CRIT RATE,19.2%
+"Gaming","11,418",301,703,ATK,24.0%
 "Ganyu","9,796",334,630,CRIT DMG,38.4%
 "Gorou","9,569",182,648,Geo DMG,24.0%
-"Heizou","10,657",225,683,Anemo DMG,24.0%
+"ShikanoinHeizou","10,657",225,683,Anemo DMG,24.0%
 "Hu Tao","15,552",106,876,CRIT DMG,38.4%
-"Itto","12,858",227,959,CRIT Rate,19.2%
+"AratakiItto","12,858",227,959,CRIT Rate,19.2%
 "Jean","14,695",239,768,Healing,22.0%
 "Kaeya","11,636",223,791,Energy Recharge,26.8%
 "Kaveh","11,962",233,750,Elemental Mastery,96.0
-"Kazuha","13,348",296,806,Elemental Mastery,115.2
+"KaedeharaKazuha","13,348",296,806,Elemental Mastery,115.2
 "Keqing","13,103",322,799,CRIT DMG,38.4%
 "Kirara","12,179",223,546,HP,24.0%
 "Klee","10,286",310,614,Pyro DMG,28.8%
-"Kokomi","13,470",234,657,Hydro DMG,28.8%
-"Kujou Sara","9,569",195,627,ATK,24.0%
+"SangonomiyaKokomi","13,470",234,657,Hydro DMG,28.8%
+"KujouSara","9,569",195,627,ATK,24.0%
 "Layla","11,092",216,655,HP,24.0%
 "Lisa","9,569",231,573,Elemental Mastery,96
 "Lynette","12,397",231.51,711.87,Anemo DMG,24%
@@ -42,22 +46,27 @@ Name,HP,ATK,DEF,Ascension Attributes,Ascension Stat
 "Mika","12,506",223,713,HP,24.0%
 "Mona","10,409",287,653,Energy Recharge,32.0%
 "Nahida","10,360",298,630,Elemental Mastery,115.2
+"Navia","12,650",351,793,CRIT DMG,38.4%
 "Neuvillette","14,695",208.32,576.42,CRIT DMG,38.4%
 "Nilou","15,184",229,728,HP,28.8%
 "Ningguang","9,787",212,573,Geo DMG,24.0%
 "Noelle","12,071",191,798,DEF,30.0%
 "Qiqi","12,368",287,922,Healing,22.0%
-"Raiden","12,907",337,789,Energy Recharge,32.0%
+"RaidenShogun","12,907",337,789,Energy Recharge,32.0%
 "Razor","11,962",233,750,Physical DMG,30.0%
 "Rosaria","12,288",240,709,ATK,24.0%
 "Sayu","11,853",244,744,Elemental Mastery,96
 "Shenhe","12,992",303,830,ATK,28.8%
-"Shinobu","12,288",212,750,HP,24.0%
+"KukiShinobu","12,288",212,750,HP,24.0%
 "Sucrose","9,243",169,702,Anemo DMG,24.0%
 "Tartaglia","13,103",301,814,Hydro DMG,28.8%
 "Thoma","10,331",201,750,ATK,24.0%
 "Tighnari","10,849",267,630,Dendro DMG,28.8%
-"Traveler","10,874",212,682,ATK,24.0%
+"TravelerGeo","10,874",212,682,ATK,24.0%
+"TravelerAnemo","10,874",212,682,ATK,24.0%
+"TravelerElectro","10,874",212,682,ATK,24.0%
+"TravelerDendro","10,874",212,682,ATK,24.0%
+"TravelerHydro","10,874",212,682,ATK,24.0%
 "Venti",10531,263,669,Energy Recharge,32%
 "Wanderer","10,164",327,607,CRIT Rate,19.2%
 "Xiangling","10,874",225,668,Elemental Mastery,96.0
@@ -69,5 +78,5 @@ Name,HP,ATK,DEF,Ascension Attributes,Ascension Stat
 "Yaoyao","12,288",212,750,HP,24.0%
 "Yelan","14,450",243,547,CRIT Rate,19.2%
 "Yoimiya","10,164",322,614,CRIT Rate,19.2%
-"Yun Jin","10,657",191,734,Energy Recharge,26.8%
+"YunJin","10,657",191,734,Energy Recharge,26.8%
 "Zhongli","14,695",251,737,Geo DMG,28.8%

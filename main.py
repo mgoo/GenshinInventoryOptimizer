@@ -7,6 +7,7 @@ from pandas import ExcelWriter
 from tqdm import tqdm
 import multiprocessing
 
+from characters import Account
 from optimizer import Optimizer
 from utils import load_json_data
 
@@ -59,41 +60,26 @@ def all_possibilities(artifact, rolls_left):
 
 
 if __name__ == '__main__':
-    pool = multiprocessing.Pool(8)
+    # pool = multiprocessing.Pool(8)
 
-    account_data = load_json_data("resources/account_data/genshinData_GOOD_2024_04_20_18_33.json")
-
-    artifacts = account_data["artifacts"]
-    artifacts_df = GenshinData.tabulate_artifacts(artifacts)
+    account = Account("resources/account_data/genshinData_GOOD_2024_04_20_18_33.json")
 
     char_data = GenshinData.load_char_data("resources/genshin_data/genshin_char_data_4_1.csv")
 
-    character = 'KukiShinobu'
+    character_name = 'KukiShinobu'
     set = 'ThunderingFury'
 
-    char_artifact_list = artifacts_df.loc[artifacts_df["location"] == character].to_dict('records')
-    char_artifacts = dict()
-    for artifact in char_artifact_list:
-        artifact['sub_stats'] = dict()
-        for sub_stat in GenshinData.possible_sub_stats.keys():
-            if artifact[sub_stat] != 0:
-                artifact['sub_stats'][sub_stat] = artifact[sub_stat]
-            artifact.pop(sub_stat)
-        char_artifacts[artifact['slot']] = artifact
+    character = account.characters[character_name]
 
     results = {}
     for slot_to_optimize in ['flower', 'plume', 'sands', 'circlet', 'goblet']:
         print('***' + slot_to_optimize + '***')
 
-        fixed_artifacts = dict()
-        for key, item in char_artifacts.items():
-            if key != slot_to_optimize:
-                fixed_artifacts[key] = item
-
         if slot_to_optimize == 'goblet':
-            tf_artifacts = artifacts_df[(artifacts_df['main_stat'] == 'electro_') & (artifacts_df['slot'] == slot_to_optimize)].to_dict('records')
+            tf_artifacts = account.artifacts[(account.artifacts['main_stat'] == 'electro_') & (account.artifacts['slot'] == slot_to_optimize)].to_dict('records')
         else:
-            tf_artifacts = artifacts_df[(artifacts_df['set'] == set) & (artifacts_df['slot'] == slot_to_optimize)].to_dict('records')
+            tf_artifacts = account.artifacts[(account.artifacts['set'] == set) & (account.artifacts['slot'] == slot_to_optimize)].to_dict('records')
+            # tf_artifacts = artifacts_df[(artifacts_df['slot'] == slot_to_optimize)].to_dict('records')
 
         calced_artifacts = []
         for idx, artifact in enumerate(tf_artifacts):
@@ -112,10 +98,8 @@ if __name__ == '__main__':
 
             args = [{
                 'option': option,
-                'possible_sub_stats': GenshinData.possible_sub_stats,
-                'fixed_artifacts': fixed_artifacts.copy(),
-                'weapon': GenshinData.weapons['homa'],
-                'char_data': char_data.loc['Keqing'] # TODO unify Char names
+                'character': character,
+                'account': account
             } for option in options]
             # values = list(tqdm(
             #     pool.imap(Optimizer().get_value, args),
@@ -127,10 +111,10 @@ if __name__ == '__main__':
             artifact['avg_value'] = sum(values) / len(values)
             calced_artifacts.append(artifact)
         results[slot_to_optimize] = pd.DataFrame(calced_artifacts)
-    with ExcelWriter('output/{char}_{set}.xlsx'.format(char=character, set=set)) as writer:
+    with ExcelWriter('output/{char}_{set}.xlsx'.format(char=character.name, set=set)) as writer:
         for slot, df in results.items():
-            df.to_excel(writer, slot)
-        pd.concat([frame for frame in results.values()], axis=0).to_excel(writer, 'Combine')
+            df.sort_values('avg_value').to_excel(writer, slot)
+        pd.concat([frame for frame in results.values()], axis=0).sort_values('avg_value').to_excel(writer, 'Combine')
     print("Done")
 
 

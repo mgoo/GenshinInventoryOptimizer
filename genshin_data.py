@@ -1,3 +1,5 @@
+from enum import Enum
+
 import pandas as pd
 
 class GenshinData:
@@ -30,6 +32,19 @@ class GenshinData:
         "healing_": ["heal_", "Healing"]
     }
 
+    class ElementTypes(Enum):
+        ALL = "all_"
+        PYRO = "pyro_"
+        ELECTRO = "electro_"
+        CRYO = "cryo_"
+        HYDRO = "hydro_"
+        DENDRO = "dendro_"
+        ANEMO = "anemo_"
+        GEO = "geo_"
+        PHYS = "phys_"
+
+    element_types = [_.value for _ in ElementTypes]
+
     @staticmethod
     def fix_stat_name(stat):
         # if stat name is ok
@@ -39,6 +54,7 @@ class GenshinData:
         for key, item in GenshinData.stat_name_mapping.items():
             if stat in item:
                 return key
+
 
     sub_stat_rolls = [1, 0.9, 0.8, 0.7]
 
@@ -137,6 +153,7 @@ class GenshinData:
         char_data["Ascension Attributes"] = char_data["Ascension Attributes"].apply(fix_name)
         return char_data
 
+
     @staticmethod
     def get_artifact_main_stat_data(path):
         if path in GenshinData._cache_load_artifact_main_stat_data:
@@ -170,3 +187,13 @@ class GenshinData:
         main_stat_data = GenshinData.get_artifact_main_stat_data("resources/genshin_data/artifact_main_stat.csv")
 
         return main_stat_data[main_stat_map[stat]]["+" + str(level)]
+
+    @staticmethod
+    def dictionise_row(artifact):
+        artifact['sub_stats'] = dict()
+        for sub_stat in GenshinData.possible_sub_stats.keys():
+            if artifact[sub_stat] != 0:
+                artifact['sub_stats'][sub_stat] = artifact[sub_stat]
+            artifact.pop(sub_stat)
+        return artifact
+
