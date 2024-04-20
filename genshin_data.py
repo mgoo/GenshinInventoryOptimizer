@@ -2,6 +2,9 @@ from enum import Enum
 
 import pandas as pd
 
+from utils import percent_to_dec
+
+
 class GenshinData:
 
     avg_artifact_num = 1.065
@@ -15,10 +18,10 @@ class GenshinData:
         "hp":  ["HP"],  "hp_":  ["HP%"],
         "atk": ["ATK"], "atk_": ["ATK%"],
         "def": ["DEF"], "def_": ["DEF%"],
-        "crit_dmg":  ["Crit DMG%", "critDMG_", "CRIT DMG"],
-        "crit_rate": ["Crit Rate%", "critRate_", "CRIT Rate"],
-        "em":  ["Elemental Mastery", "eleMas"],
-        "er_": ["Energy Recharge%", "enerRech_", "Energy Recharge"],
+        "crit_dmg":  ["Crit DMG%", "critDMG_", "CRIT DMG", "CRITDMG"],
+        "crit_rate": ["Crit Rate%", "critRate_", "CRIT Rate", "CRITRate"],
+        "em":  ["Elemental Mastery", "eleMas", "ElementalMastery"],
+        "er_": ["Energy Recharge%", "enerRech_", "Energy Recharge", "EnergyRecharge"],
 
         "pyro_":    ["pyro_dmg_", "Pyro DMG"],
         "electro_": ["electro_dmg_", "Electro DMG"],
@@ -27,7 +30,7 @@ class GenshinData:
         "dendro_":  ["dendro_dmg_", "Dendro DMG"],
         "anemo_":   ["anemo_dmg_", "Anemo DMG"],
         "geo_":     ["geo_dmg_", "Geo DMG"],
-        "phys_":    ["physical_dmg_", "Physical DMG"],
+        "phys_":    ["physical_dmg_", "Physical DMG", "PhysicalDMGBonus"],
 
         "healing_": ["heal_", "Healing"]
     }
@@ -99,12 +102,6 @@ class GenshinData:
         "circlet": {"hp_": .22, "atk_": .22, "def_": .22, "crit_rate": .1, "crit_dmg": .1, "healing_": .1, "em": .04}
     }
 
-    # Assumes lv 90
-    weapons = {
-        'homa': {'atk': 608, 'crit_dmg': .662},
-        'mist_splitter': {'atk': 674, 'crit_dmg': .441}
-    }
-
     _cache_load_artifact_main_stat_data = dict()
 
     @staticmethod
@@ -138,12 +135,6 @@ class GenshinData:
         char_data.set_index("Name", inplace=True)
         char_data["HP"] = pd.to_numeric(char_data["HP"].replace(",", "", regex=True))
 
-        def percent_to_dec(value: str):
-            if "%" in value:
-                value = value.replace("%", "")
-                value = str(float(value) / 100)
-            return value
-
         def fix_name(value: str):
             if value == 'ATK':
                 return 'atk_'
@@ -153,6 +144,23 @@ class GenshinData:
         char_data["Ascension Attributes"] = char_data["Ascension Attributes"].apply(fix_name)
         return char_data
 
+    @staticmethod
+    def load_weapon_data(path):
+        wep_data = pd.read_csv(path)
+        wep_data.set_index("Weapon", inplace=True)
+
+        def fix_name(value: str):
+            if value == 'ATK':
+                return 'atk_'
+            if value == 'HP':
+                return 'hp_'
+            if value == 'DEF':
+                return 'def_'
+            return GenshinData.fix_stat_name(value)
+
+        wep_data['Value'] = pd.to_numeric(wep_data['Value'].apply(percent_to_dec))
+        wep_data['Secondary'] = wep_data['Secondary'].apply(fix_name)
+        return wep_data
 
     @staticmethod
     def get_artifact_main_stat_data(path):

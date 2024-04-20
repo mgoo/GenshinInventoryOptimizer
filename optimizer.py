@@ -28,7 +28,7 @@ class Optimizer:
 
         return self.calc_dmg(character, account)
 
-    def calc_dmg(self, character, acconut):
+    def calc_dmg(self, character, account):
         """
         Calculates a damage number that is used as a heuristic for how good an artifact is
         :param character:
@@ -37,7 +37,7 @@ class Optimizer:
         """
 
         buffs = [
-            vv_4p_builder(GenshinData.ElementTypes.ELECTRO), sucrose_a1, sucrose_a4,
+            vv_4p_builder(GenshinData.ElementTypes.ELECTRO), sucrose_a1, sucrose_a4_builder(account.characters['Sucrose']),
             mistsplitter_builder(2)
         ]
 

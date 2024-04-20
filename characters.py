@@ -3,7 +3,8 @@ from enum import Enum
 from genshin_data import GenshinData
 from utils import load_json_data
 
-char_data = GenshinData.load_char_data("resources/genshin_data/genshin_char_data_4_1.csv")
+char_data = GenshinData.load_char_data('resources/genshin_data/genshin_char_data_4_1.csv')
+wep_data = GenshinData.load_weapon_data('resources/genshin_data/genshin_weapon_data.csv')
 
 class Account:
     def __init__(self, path):
@@ -13,7 +14,18 @@ class Account:
         self.artifacts = GenshinData.tabulate_artifacts(artifacts)
 
         weapons = account_data['weapons']
-        # TODO get weapon data properly
+        self.weapons = dict()
+        wep_locations = dict()
+        for weapon in weapons:
+            wep_atk = wep_data.loc[weapon['key']]['ATK']
+            wep_sec = wep_data.loc[weapon['key']]['Secondary']
+            wep_sec_val = wep_data.loc[weapon['key']]['Value']
+            self.weapons[weapon['key']] = {
+                'atk': wep_atk,
+                wep_sec: wep_sec_val
+            }
+            if weapon['location'] != '':
+                wep_locations[weapon['location']] = self.weapons[weapon['key']]
 
         self.characters = dict()
         for character in account_data['characters']:
@@ -26,7 +38,7 @@ class Account:
             self.characters[character['key']] = Character(
                 character['key'],
                 character['level'], character['talent']['auto'], character['talent']['skill'], character['talent']['burst'],
-                {'atk': 100, 'atk_': 0.1},  # TODO get proper data
+                wep_locations[character['key']],
                 char_artifacts,
                 char_data.loc[character['key']]
             )
@@ -43,13 +55,15 @@ class Character:
 
         self._raw_data = raw_data
 
-        self.crit_dmg = GenshinData.char_base_crit_dmg + self.weapon['crit_dmg'] if 'crit_dmg' in self.weapon.keys() else 0
-        self.crit_rate = GenshinData.char_base_crit_rate + self.weapon['crit_rate'] if 'crit_rate' in self.weapon.keys() else 0
+        self.crit_dmg = GenshinData.char_base_crit_dmg + (self.weapon['crit_dmg'] if 'crit_dmg' in self.weapon.keys() else 0)
+        self.crit_rate = GenshinData.char_base_crit_rate + (self.weapon['crit_rate'] if 'crit_rate' in self.weapon.keys() else 0)
         # char data
         self.char_atk = raw_data["ATK"]
         self.atk_ = weapon['atk_'] if 'atk_' in weapon.keys() else 0
         self.flat_atk = 0
         self.dmg_ = DmgBonus()
+        if 'phys_' in weapon:
+            self.dmg_.add_bonus(weapon['phys_'], GenshinData.ElementTypes.PHYS)
         self.em = 0 + weapon['em'] if 'em' in weapon.keys() else 0
 
         self.wep_atk = weapon['atk']

@@ -17,9 +17,11 @@ def sucrose_a1(talent_, base_atk, atk_, flat_atk, crit_rate, crit_dmg, dmg_, em,
     return talent_, base_atk, atk_, flat_atk, crit_rate, crit_dmg, em
 
 
-def sucrose_a4(talent_, base_atk, atk_, flat_atk, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-    em += 169.73  # 20% of sucrose em
-    return talent_, base_atk, atk_, flat_atk, crit_rate, crit_dmg, em
+def sucrose_a4_builder(sucrose):
+    def sucrose_a4(talent_, base_atk, atk_, flat_atk, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
+        em += sucrose.em * 0.2  # TODO apply buffs
+        return talent_, base_atk, atk_, flat_atk, crit_rate, crit_dmg, em
+    return sucrose_a4
 
 
 def collei_c4(talent_, base_atk, atk_, flat_atk, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
