@@ -43,11 +43,16 @@ class Reactions(Enum):
     BURNING = '15'
 
 
-    def calc_dmg(self, talent_, total_atk, flat_dmg, crit_rate, crit_dmg, dmg_, em, atk_type, element, bonus, def_redu):
+    def calc_dmg(
+            self,
+            talent_, total_atk, total_hp, total_def,
+            flat_dmg,
+            crit_rate, crit_dmg,
+            dmg_, em,
+            atk_type, element, bonus, def_redu
+    ):
         avg_crit_bonus = 1 + min(max(0, crit_rate), 1) * crit_dmg
-        hp = 0 # TODO Support HP scaling
-        defence = 0 # TODO Support DEF Scaling
-        base_dmg = sum([talent_mult(total_atk, em, hp, defence) for talent_mult in talent_]) + flat_dmg
+        base_dmg = sum([talent_mult(total_atk, em, total_hp, total_def) for talent_mult in talent_]) + flat_dmg
 
         if self == Reactions.NONE:
             return dmg_formula(base_dmg, avg_crit_bonus, dmg_, atk_type, element, def_redu)

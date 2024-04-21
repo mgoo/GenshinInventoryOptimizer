@@ -211,9 +211,11 @@ class Optimizer:
         if buffs is None:
             buffs = []
 
-        talent_, base_atk, atk_, flat_atk, flat_dmg, crit_rate, crit_dmg, em, dmg_, def_redu, reaction_bonus = char.apply_buffs(buffs, reaction, talent_)
+        talent_, atk_, flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em, dmg_, def_redu, reaction_bonus = char.apply_buffs(buffs, reaction, talent_)
 
-        total_atk = base_atk * (1 + atk_) + flat_atk
-        return reaction.calc_dmg(talent_, total_atk, flat_dmg, crit_rate, crit_dmg, dmg_, em, atk_type, element, reaction_bonus, def_redu)
+        total_hp = char.char_hp * (1 + hp_) + flat_hp
+        total_def = char.char_def * (1 + def_) + flat_def
+        total_atk = (char.char_atk + char.wep_atk) * (1 + atk_) + flat_atk
+        return reaction.calc_dmg(talent_, total_atk, total_hp, total_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, atk_type, element, reaction_bonus, def_redu)
 
 

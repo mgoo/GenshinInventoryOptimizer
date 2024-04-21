@@ -60,9 +60,19 @@ class Character:
         self.crit_dmg = GenshinData.char_base_crit_dmg + (self.weapon['crit_dmg'] if 'crit_dmg' in self.weapon.keys() else 0)
         self.crit_rate = GenshinData.char_base_crit_rate + (self.weapon['crit_rate'] if 'crit_rate' in self.weapon.keys() else 0)
         # char data
+        self.char_hp = raw_data["HP"]
         self.char_atk = raw_data["ATK"]
+        self.char_def = raw_data["DEF"]
+
+        self.hp_ = weapon['hp_'] if 'hp_' in weapon.keys() else 0
+        self.flat_hp = 0
+
         self.atk_ = weapon['atk_'] if 'atk_' in weapon.keys() else 0
         self.flat_atk = 0
+
+        self.def_ = weapon['def_'] if 'def_' in weapon.keys() else 0
+        self.flat_def = 0
+
         self.dmg_ = DmgBonus()
         if 'phys_' in weapon:
             self.dmg_.add_bonus(weapon['phys_'], GenshinData.ElementTypes.PHYS)
@@ -72,6 +82,8 @@ class Character:
 
         # Character Asscension stats
         if raw_data['Ascension Attributes'] == 'atk_':        self.atk_ += raw_data["Ascension Stat"]
+        elif raw_data['Ascension Attributes'] == 'hp_':       self.hp_ += raw_data["Ascension Stat"]
+        elif raw_data['Ascension Attributes'] == 'def_':      self.def_ += raw_data["Ascension Stat"]
         elif raw_data['Ascension Attributes'] == 'em':        self.em += raw_data["Ascension Stat"]
         elif raw_data['Ascension Attributes'] == 'crit_dmg':  self.crit_dmg += raw_data["Ascension Stat"]
         elif raw_data['Ascension Attributes'] == 'crit_rate': self.crit_rate += raw_data["Ascension Stat"]
@@ -82,6 +94,9 @@ class Character:
         for item in self.artifacts.values():
             if item['main_stat'] == 'atk':         self.flat_atk += item['main_stat_value']
             elif item['main_stat'] == 'atk_':      self.atk_ += item['main_stat_value']
+            elif item['main_stat'] == 'hp':        self.flat_hp += item['main_stat_value']
+            elif item['main_stat'] == 'hp_':       self.hp_ += item['main_stat_value']
+            elif item['main_stat'] == 'def_':      self.def_ += item['main_stat_value']
             elif item['main_stat'] == 'em':        self.em += item['main_stat_value']
             elif item['main_stat'] == 'crit_dmg':  self.crit_dmg += item['main_stat_value']
             elif item['main_stat'] == 'crit_rate': self.crit_rate += item['main_stat_value']
@@ -93,6 +108,10 @@ class Character:
             for stat, value in item['sub_stats'].items():
                 if stat == 'atk':         self.flat_atk += value
                 elif stat == 'atk_':      self.atk_ += value
+                elif stat == 'hp':        self.flat_hp += value
+                elif stat == 'hp_':       self.hp_ += value
+                elif stat == 'def':       self.flat_def += value
+                elif stat == 'def_':      self.def_ += value
                 elif stat == 'em':        self.em += value
                 elif stat == 'crit_dmg':  self.crit_dmg += value
                 elif stat == 'crit_rate': self.crit_rate += value
@@ -106,10 +125,12 @@ class Character:
         if talent_ is None:
             talent_ = []
 
-        char_atk = self.char_atk
-        wep_atk = self.wep_atk
         atk_ = self.atk_
         flat_atk = self.flat_atk
+        hp_ = self.hp_
+        flat_hp = self.flat_hp
+        def_ = self.def_
+        flat_def = self.flat_def
         dmg_ = copy.deepcopy(self.dmg_)
         flat_dmg = 0
         crit_rate = self.crit_rate
@@ -119,12 +140,11 @@ class Character:
         def_redu = ElementalWrapper()
         reaction_bonus = ReactionBonuses()
 
-        base_atk = (char_atk + wep_atk)
         for buff in buffs:
-            talent_, base_atk, atk_, flat_atk, flat_dmg, crit_rate, crit_dmg, em = buff(
-                talent_, base_atk, atk_, flat_atk, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu
+            talent_, atk_, flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em = buff(
+                talent_, atk_, flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu
             )
-        return talent_, base_atk, atk_, flat_atk, flat_dmg, crit_rate, crit_dmg, em, dmg_, def_redu, reaction_bonus
+        return talent_, atk_, flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em, dmg_, def_redu, reaction_bonus
 
 
 class Party:
