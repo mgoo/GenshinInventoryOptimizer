@@ -1,7 +1,7 @@
 import collections
 
 from buffs import *
-from characters import ElementalWrapper, DmgBonus, DmgTypes, Character
+from characters import ElementalWrapper, DmgBonus, DmgTypes, Character, character_cache
 from reactions import Reactions, ReactionBonuses
 from genshin_data import GenshinData
 
@@ -35,17 +35,13 @@ class Optimizer:
     def __init__(self):
         pass
 
-    def get_value(self, args):
+    def get_value(self, option, character, account):
         """
         Gets the damage a character would do with a specific artifact
         Users only one param as this is made to be run in parallel
         :param args:
         :return:
         """
-        option = args['option']
-        character = args['character']
-        account = args['account']
-
         new_artifacts = character.artifacts.copy()
         new_artifacts[option['slot']] = option
         character = character.rebuild(new_artifacts=new_artifacts)
@@ -62,7 +58,7 @@ class Optimizer:
         """
 
         buffs = [
-            vv_4p_builder(GenshinData.ElementTypes.ELECTRO), sucrose_a1, sucrose_a4_builder(account.characters['Sucrose'], [collei_c4]),
+            vv_4p_builder(GenshinData.ElementTypes.ELECTRO), sucrose_a1, sucrose_a4_builder(character_cache['Sucrose']),
             collei_c4,
             mistsplitter_builder(2)
         ]
@@ -211,11 +207,11 @@ class Optimizer:
         if buffs is None:
             buffs = []
 
-        talent_, atk_, flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em, dmg_, def_redu, reaction_bonus = char.apply_buffs(buffs, reaction, talent_)
+        talent_, flat_dmg, dmg_, def_redu, reaction_bonus = char.apply_buffs(buffs, reaction, talent_)
 
-        total_hp = char.char_hp * (1 + hp_) + flat_hp
-        total_def = char.char_def * (1 + def_) + flat_def
-        total_atk = (char.char_atk + char.wep_atk) * (1 + atk_) + flat_atk
-        return reaction.calc_dmg(talent_, total_atk, total_hp, total_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, atk_type, element, reaction_bonus, def_redu)
+        total_hp = char.char_hp * (1 + char.hp_) + char.flat_hp
+        total_def = char.char_def * (1 + char.def_) + char.flat_def
+        total_atk = (char.char_atk + char.wep_atk) * (1 + char.atk_) + char.flat_atk
+        return reaction.calc_dmg(talent_, total_atk, total_hp, total_def, flat_dmg, char.crit_rate, char.crit_dmg, dmg_, char.em, atk_type, element, reaction_bonus, def_redu)
 
 

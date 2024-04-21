@@ -7,7 +7,8 @@ from pandas import ExcelWriter
 from tqdm import tqdm
 import multiprocessing
 
-from characters import Account
+import buffs
+from characters import Account, character_cache
 from optimizer import Optimizer
 from utils import load_json_data
 
@@ -74,6 +75,11 @@ if __name__ == '__main__':
 
     character = account.characters[character_name]
 
+    # Cache party to speed up calcs
+    sucrose = account.characters['Sucrose']
+    sucrose.apply_buffs([buffs.collei_c4])
+    character_cache['Sucrose'] = sucrose
+
     results = {}
     for slot_to_optimize in ['flower', 'plume', 'sands', 'circlet', 'goblet']:
         print('***' + slot_to_optimize + '***')
@@ -98,18 +104,10 @@ if __name__ == '__main__':
             # Find all possible options when leveling up the artifact
             options = all_possibilities(copy.deepcopy(artifact), rolls_left)
 
-
-            args = [{
-                'option': option,
-                'character': character,
-                'account': account
-            } for option in options]
-            # values = list(tqdm(
-            #     pool.imap(Optimizer().get_value, args),
-            #     total=len(args),
-            #     desc='calculating: {idx}/{total}'.format(idx=idx + 1, total=len(tf_artifacts))
-            # ))
-            values = [Optimizer().get_value(arg) for arg in tqdm(args, desc='calculating: {idx}/{total}'.format(idx=idx + 1, total=len(tf_artifacts)))]
+            values = [
+                Optimizer().get_value(option, character, account)
+                for option in tqdm(options, desc='calculating: {idx}/{total}'.format(idx=idx + 1, total=len(tf_artifacts)))
+            ]
 
             artifact['avg_value'] = sum(values) / len(values)
             calced_artifacts.append(artifact)

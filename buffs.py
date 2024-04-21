@@ -19,13 +19,9 @@ def sucrose_a1(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg,
     return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
 
 
-def sucrose_a4_builder(sucrose: Character, buffs=None):
-    if buffs is None:
-        buffs = []
-    _, _, _, _, _, _, _, _, _, _, sucrose_em, _, _, _ = sucrose.apply_buffs(buffs)
-
+def sucrose_a4_builder(sucrose: Character):
     def sucrose_a4(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-        em += sucrose_em * 0.2
+        em += sucrose.em * 0.2
         return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
     return sucrose_a4
 
@@ -35,26 +31,18 @@ def collei_c4(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, 
     return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
 
 
-def nahida_a1_builder(highest_em_char, buffs=None):
-    if buffs is None:
-        buffs = []
-    _, _, _, _, _, _, _, _, _, _, highest_em, _, _, _ = highest_em_char.apply_buffs(buffs)
-
+def nahida_a1_builder(highest_em_char):
     def nahida_a1(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-        em += min(highest_em * 0.25, 250)
+        em += min(highest_em_char.em * 0.25, 250)
         return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
     return nahida_a1
 
 
-def alhaitham_a4_builder(alhaitham, buffs=None):
-    if buffs is None:
-        buffs = []
-    _, _, _, _, _, _, _, _, _, _, alhaitham_em, _, _, _ = alhaitham.apply_buffs(buffs)
-
+def alhaitham_a4_builder(alhaitham):
     def alhaitham_a4(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-        bonus = 0.001 * alhaitham_em
-        dmg_.add_bonus(bonus, DmgTypes.SKILL)
-        dmg_.add_bonus(bonus, DmgTypes.BURST)
+        bonus = 0.001 * alhaitham.em
+        dmg_.add_bonus_enum(bonus, DmgTypes.SKILL)
+        dmg_.add_bonus_enum(bonus, DmgTypes.BURST)
         return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
     return alhaitham_a4
 
@@ -65,19 +53,15 @@ def tighnari_c1(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg
 
 
 def tighnari_c2(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-    dmg_.add_bonus(0.2, GenshinData.ElementTypes.DENDRO)
+    dmg_.add_bonus_enum(0.2, GenshinData.ElementTypes.DENDRO)
     return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
 
 
-def tighnari_a4_builder(tighnari, buffs=None):
-    if buffs is None:
-        buffs = []
-    _, _, _, _, _, _, _, _, _, _, tighnari_em, _, _, _ = tighnari.apply_buffs(buffs)
-
+def tighnari_a4_builder(tighnari):
     def tighnari_a4(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-        bonus = min(tighnari_em * 0.0006, 0.6)
-        dmg_.add_bonus(bonus, DmgTypes.CHARGE)
-        dmg_.add_bonus(bonus, DmgTypes.BURST)
+        bonus = min(tighnari.em * 0.0006, 0.6)
+        dmg_.add_bonus_enum(bonus, DmgTypes.CHARGE)
+        dmg_.add_bonus_enum(bonus, DmgTypes.BURST)
         return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
     return tighnari_a4
 
@@ -89,7 +73,7 @@ def tighnari_a1(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg
 
 # Artifacts
 def thundering_fury_2p(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-    dmg_.add_bonus(0.15, GenshinData.ElementTypes.ELECTRO)
+    dmg_.add_bonus_enum(0.15, GenshinData.ElementTypes.ELECTRO)
     return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
 
 
@@ -115,17 +99,17 @@ def wandererstroupe_2p(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, f
 
 
 def wandererstroupe_4p(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-    dmg_.add_bonus(0.35, DmgTypes.CHARGE)
+    dmg_.add_bonus_enum(0.35, DmgTypes.CHARGE)
     return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
 
 
 def deepwood_2p(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-    dmg_.add_bonus(0.35, GenshinData.ElementTypes.DENDRO)
+    dmg_.add_bonus_enum(0.35, GenshinData.ElementTypes.DENDRO)
     return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
 
 
 def deepwood_4p(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-    def_redu.add_bonus(0.30, GenshinData.ElementTypes.DENDRO)
+    def_redu.add_bonus_enum(0.30, GenshinData.ElementTypes.DENDRO)
     return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
 
 
@@ -158,13 +142,13 @@ def mistsplitter_builder(stacks):
     def mistsplitter_buff(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
         amounts = [0.08, 0.16, 0.28]
         total_boost = 0.12 + amounts[stacks]
-        dmg_.add_bonus(total_boost, GenshinData.ElementTypes.ELECTRO)
-        dmg_.add_bonus(total_boost, GenshinData.ElementTypes.PYRO)
-        dmg_.add_bonus(total_boost, GenshinData.ElementTypes.CRYO)
-        dmg_.add_bonus(total_boost, GenshinData.ElementTypes.HYDRO)
-        dmg_.add_bonus(total_boost, GenshinData.ElementTypes.ANEMO)
-        dmg_.add_bonus(total_boost, GenshinData.ElementTypes.GEO)
-        dmg_.add_bonus(total_boost, GenshinData.ElementTypes.DENDRO)
+        dmg_.add_bonus_enum(total_boost, GenshinData.ElementTypes.ELECTRO)
+        dmg_.add_bonus_enum(total_boost, GenshinData.ElementTypes.PYRO)
+        dmg_.add_bonus_enum(total_boost, GenshinData.ElementTypes.CRYO)
+        dmg_.add_bonus_enum(total_boost, GenshinData.ElementTypes.HYDRO)
+        dmg_.add_bonus_enum(total_boost, GenshinData.ElementTypes.ANEMO)
+        dmg_.add_bonus_enum(total_boost, GenshinData.ElementTypes.GEO)
+        dmg_.add_bonus_enum(total_boost, GenshinData.ElementTypes.DENDRO)
         return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
     return mistsplitter_buff
 
@@ -175,13 +159,13 @@ def thousand_dreams_builder(same):
             em += 32
         else:
             # TODO DMG bonus for only the characters type (this is close enough for now
-            dmg_.add_bonus(0.10, GenshinData.ElementTypes.ELECTRO)
-            dmg_.add_bonus(0.10, GenshinData.ElementTypes.PYRO)
-            dmg_.add_bonus(0.10, GenshinData.ElementTypes.CRYO)
-            dmg_.add_bonus(0.10, GenshinData.ElementTypes.HYDRO)
-            dmg_.add_bonus(0.10, GenshinData.ElementTypes.ANEMO)
-            dmg_.add_bonus(0.10, GenshinData.ElementTypes.GEO)
-            dmg_.add_bonus(0.10, GenshinData.ElementTypes.DENDRO)
+            dmg_.add_bonus_enum(0.10, GenshinData.ElementTypes.ELECTRO)
+            dmg_.add_bonus_enum(0.10, GenshinData.ElementTypes.PYRO)
+            dmg_.add_bonus_enum(0.10, GenshinData.ElementTypes.CRYO)
+            dmg_.add_bonus_enum(0.10, GenshinData.ElementTypes.HYDRO)
+            dmg_.add_bonus_enum(0.10, GenshinData.ElementTypes.ANEMO)
+            dmg_.add_bonus_enum(0.10, GenshinData.ElementTypes.GEO)
+            dmg_.add_bonus_enum(0.10, GenshinData.ElementTypes.DENDRO)
         return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
     return thousand_dreams
 
@@ -195,8 +179,8 @@ def foliar_incision_builder(char):
 
 
 def stringless(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-    dmg_.add_bonus(0.48, DmgTypes.SKILL)
-    dmg_.add_bonus(0.48, DmgTypes.BURST)
+    dmg_.add_bonus_enum(0.48, DmgTypes.SKILL)
+    dmg_.add_bonus_enum(0.48, DmgTypes.BURST)
     return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
 
 #Resonance

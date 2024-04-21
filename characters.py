@@ -8,6 +8,9 @@ from utils import load_json_data
 char_data = GenshinData.load_char_data('resources/genshin_data/genshin_char_data_4_1.csv')
 wep_data = GenshinData.load_weapon_data('resources/genshin_data/genshin_weapon_data.csv')
 
+character_cache = dict()
+
+
 class Account:
     def __init__(self, path):
         account_data = load_json_data(path)
@@ -44,6 +47,7 @@ class Account:
                 char_artifacts,
                 char_data.loc[character['key']]
             )
+
 
 class Character:
     def __init__(self, name, level, n_level, skill_level, burst_level, weapon, artifacts, raw_data):
@@ -131,7 +135,7 @@ class Character:
         flat_hp = self.flat_hp
         def_ = self.def_
         flat_def = self.flat_def
-        dmg_ = copy.deepcopy(self.dmg_)
+        dmg_ = self.dmg_
         flat_dmg = 0
         crit_rate = self.crit_rate
         crit_dmg = self.crit_dmg
@@ -144,7 +148,20 @@ class Character:
             talent_, atk_, flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em = buff(
                 talent_, atk_, flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu
             )
-        return talent_, atk_, flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em, dmg_, def_redu, reaction_bonus
+
+        self.atk_ = atk_
+        self.flat_atk = flat_atk
+        self.hp_ = hp_
+        self.flat_hp = flat_hp
+        self.def_ = def_
+        self.flat_def = flat_def
+
+        self.crit_rate = crit_rate
+        self.crit_dmg = crit_dmg
+
+        self.em = em
+
+        return talent_, flat_dmg, dmg_, def_redu, reaction_bonus
 
 
 class Party:
@@ -157,8 +174,12 @@ class ElementalWrapper:
     def __init__(self):
         self._all = 0
         self._element = dict()
+        self._locked = False
         for elem in GenshinData.element_types:
             self._element[elem] = 0
+
+    def lock(self):
+        self._locked = True
 
     def get(self, element):
         if isinstance(element, GenshinData.ElementTypes):
@@ -169,6 +190,8 @@ class ElementalWrapper:
         return self._element[GenshinData.ElementTypes.ALL.value] + self._element[element]
 
     def add_bonus(self, amount, type):
+        if self._locked:
+            raise Exception('Element Wrapper is Locked')
         if isinstance(type, GenshinData.ElementTypes):
             type = type.value
         if type == GenshinData.ElementTypes.ALL.value:
@@ -177,6 +200,13 @@ class ElementalWrapper:
             self._element[type] += amount
         else:
             raise Exception("element " + type + "not found")
+
+    def __copy__(self):
+        copy = ElementalWrapper()
+        copy._all = self._all
+        for key, value in self._element.items():
+            copy._element[key] = value
+        return copy
 
 
 class DmgTypes(Enum):
@@ -190,6 +220,7 @@ class DmgTypes(Enum):
 class DmgBonus(ElementalWrapper):
     def __init__(self):
         super().__init__()
+
         self._type = dict()
         for type in DmgTypes:
             self._type[type.value] = 0
@@ -199,16 +230,34 @@ class DmgBonus(ElementalWrapper):
             type = type.value
         return super(DmgBonus, self).get(element) + self._type[type]
 
-    def add_bonus(self, amount, type):
-        if isinstance(type, DmgTypes):
-            type = type.value
-        if isinstance(type, GenshinData.ElementTypes):
-            type = type.value
+    def add_bonus_enum(self, amount, type: (GenshinData.ElementTypes or DmgTypes)):
+        if self._locked:
+            raise Exception('DmgBonus is Locked')
+        if type == GenshinData.ElementTypes.ALL:
+            self._all += amount
+        elif type.value in self._element:
+            self._element[type.value] += amount
+        elif type in self._type:
+            self._type[type.value] += amount
+        else:
+            raise Exception('Unknown dmg Type ' + type)
+
+    def add_bonus(self, amount, type: str):
         if type == GenshinData.ElementTypes.ALL.value:
             self._all += amount
         elif type in self._element:
-            self._element[type] += amount
+            self.add_bonus_enum(amount, GenshinData.ElementTypes(type))
         elif type in self._type:
-            self._type[type] += amount
+            self.add_bonus_enum(amount, DmgTypes(type))
         else:
-            raise Exception("unkown dmg type " + type)
+            raise Exception('Unknown dmg Type ' + type)
+
+    def __copy__(self):
+        copy = DmgBonus()
+        copy._all = self._all
+        for key, value in self._element.items():
+            copy._element[key] = value
+        for key, value in self._type.items():
+            copy._type[key] = value
+        return copy
+
