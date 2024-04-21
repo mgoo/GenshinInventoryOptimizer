@@ -1,6 +1,8 @@
 from enum import Enum
+import copy
 
 from genshin_data import GenshinData
+from reactions import ReactionBonuses, Reactions
 from utils import load_json_data
 
 char_data = GenshinData.load_char_data('resources/genshin_data/genshin_char_data_4_1.csv')
@@ -99,6 +101,31 @@ class Character:
         artifacts = new_artifacts if new_artifacts is not None else self.artifacts
         weapon = new_weapon if new_weapon is not None else self.weapon
         return Character(self.name, self.level, self.n_level, self.skill_level, self.burst_level, weapon, artifacts, self._raw_data)
+
+    def apply_buffs(self, buffs, reaction=Reactions.NONE, talent_=None):
+        if talent_ is None:
+            talent_ = []
+
+        char_atk = self.char_atk
+        wep_atk = self.wep_atk
+        atk_ = self.atk_
+        flat_atk = self.flat_atk
+        dmg_ = copy.deepcopy(self.dmg_)
+        flat_dmg = 0
+        crit_rate = self.crit_rate
+        crit_dmg = self.crit_dmg
+        em = self.em
+
+        def_redu = ElementalWrapper()
+        reaction_bonus = ReactionBonuses()
+
+        base_atk = (char_atk + wep_atk)
+        for buff in buffs:
+            talent_, base_atk, atk_, flat_atk, flat_dmg, crit_rate, crit_dmg, em = buff(
+                talent_, base_atk, atk_, flat_atk, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu
+            )
+        return talent_, base_atk, atk_, flat_atk, flat_dmg, crit_rate, crit_dmg, em, dmg_, def_redu, reaction_bonus
+
 
 class Party:
 

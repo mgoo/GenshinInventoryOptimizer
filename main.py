@@ -67,7 +67,10 @@ if __name__ == '__main__':
     char_data = GenshinData.load_char_data("resources/genshin_data/genshin_char_data_4_1.csv")
 
     character_name = 'KukiShinobu'
+    # set = 'GildedDreams'
+    # set = 'WanderersTroupe'
     set = 'ThunderingFury'
+    element = 'electro_'
 
     character = account.characters[character_name]
 
@@ -76,7 +79,7 @@ if __name__ == '__main__':
         print('***' + slot_to_optimize + '***')
 
         if slot_to_optimize == 'goblet':
-            tf_artifacts = account.artifacts[(account.artifacts['main_stat'] == 'electro_') & (account.artifacts['slot'] == slot_to_optimize)].to_dict('records')
+            tf_artifacts = account.artifacts[(account.artifacts['main_stat'] == element) & (account.artifacts['slot'] == slot_to_optimize)].to_dict('records')
         else:
             tf_artifacts = account.artifacts[(account.artifacts['set'] == set) & (account.artifacts['slot'] == slot_to_optimize)].to_dict('records')
             # tf_artifacts = artifacts_df[(artifacts_df['slot'] == slot_to_optimize)].to_dict('records')

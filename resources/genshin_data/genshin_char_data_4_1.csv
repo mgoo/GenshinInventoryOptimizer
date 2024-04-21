@@ -1,82 +1,83 @@
 Name,HP,ATK,DEF,Ascension Attributes,Ascension Stat
-"Albedo","13,225",251,876,Geo DMG,28.8%
-"Alhaitham","13,348",313,781,Dendro DMG,28.8%
-"Aloy","10,898",233,676,Cryo DMG,28.8%
-"Amber","9,461",223,600,ATK,24.0%
-"Ayaka","12,858",342,783,CRIT DMG,38.4%
-"Ayato","13,715",298,768,CRIT DMG,38.4%
-"Baizhu","13,348",192,499,HP,28.8%
-"Barbara","9,787",159,668,HP,24.0%
-"Beidou","13,049",225,648,Electro DMG,24.0%
-"Bennett","12,397",191,771,Energy Recharge,26.8%
-"Candace","10,874",212,682,HP,24.0%
-"Charlotte","10,766",173,546,ATK,24.0%
-"Chevreuse","11,962",193,605,HP,24.0%
-"Chongyun","10,983",223,648,ATK,24.0%
-"Collei","9,787",199,600,ATK,24.0%
-"Cyno","12,490",318,859,CRIT DMG,24.0%
-"Dehya","15,674",265,627,HP,28.8%
-"Diluc","12,980",334,783,CRIT Rate,19.2%
-"Diona","9,569",212,600,Cryo DMG,24.0%
-"Dori","12,397",223,723,HP,24.0%
-"Eula","13,225",342,750,CRIT DMG,38.4%
-"Faruzan","9,569",196,627,ATK,24.0%
-"Fischl","9,189",244,593,ATK,24.0%
-"Freminet","12,071",254.88,708.46,ATK,24.0%
-"Furina","15,307",244,696,CRIT RATE,19.2%
-"Gaming","11,418",301,703,ATK,24.0%
-"Ganyu","9,796",334,630,CRIT DMG,38.4%
-"Gorou","9,569",182,648,Geo DMG,24.0%
-"ShikanoinHeizou","10,657",225,683,Anemo DMG,24.0%
-"Hu Tao","15,552",106,876,CRIT DMG,38.4%
-"AratakiItto","12,858",227,959,CRIT Rate,19.2%
-"Jean","14,695",239,768,Healing,22.0%
-"Kaeya","11,636",223,791,Energy Recharge,26.8%
-"Kaveh","11,962",233,750,Elemental Mastery,96.0
-"KaedeharaKazuha","13,348",296,806,Elemental Mastery,115.2
-"Keqing","13,103",322,799,CRIT DMG,38.4%
-"Kirara","12,179",223,546,HP,24.0%
-"Klee","10,286",310,614,Pyro DMG,28.8%
-"SangonomiyaKokomi","13,470",234,657,Hydro DMG,28.8%
-"KujouSara","9,569",195,627,ATK,24.0%
-"Layla","11,092",216,655,HP,24.0%
-"Lisa","9,569",231,573,Elemental Mastery,96
-"Lynette","12,397",231.51,711.87,Anemo DMG,24%
-"Lyney","11,021",318.11,537.99,CRIT Rate,19.2%
-"Mika","12,506",223,713,HP,24.0%
-"Mona","10,409",287,653,Energy Recharge,32.0%
-"Nahida","10,360",298,630,Elemental Mastery,115.2
-"Navia","12,650",351,793,CRIT DMG,38.4%
-"Neuvillette","14,695",208.32,576.42,CRIT DMG,38.4%
-"Nilou","15,184",229,728,HP,28.8%
-"Ningguang","9,787",212,573,Geo DMG,24.0%
-"Noelle","12,071",191,798,DEF,30.0%
-"Qiqi","12,368",287,922,Healing,22.0%
-"RaidenShogun","12,907",337,789,Energy Recharge,32.0%
-"Razor","11,962",233,750,Physical DMG,30.0%
-"Rosaria","12,288",240,709,ATK,24.0%
-"Sayu","11,853",244,744,Elemental Mastery,96
-"Shenhe","12,992",303,830,ATK,28.8%
-"KukiShinobu","12,288",212,750,HP,24.0%
-"Sucrose","9,243",169,702,Anemo DMG,24.0%
-"Tartaglia","13,103",301,814,Hydro DMG,28.8%
-"Thoma","10,331",201,750,ATK,24.0%
-"Tighnari","10,849",267,630,Dendro DMG,28.8%
-"TravelerGeo","10,874",212,682,ATK,24.0%
-"TravelerAnemo","10,874",212,682,ATK,24.0%
-"TravelerElectro","10,874",212,682,ATK,24.0%
-"TravelerDendro","10,874",212,682,ATK,24.0%
-"TravelerHydro","10,874",212,682,ATK,24.0%
-"Venti",10531,263,669,Energy Recharge,32%
-"Wanderer","10,164",327,607,CRIT Rate,19.2%
-"Xiangling","10,874",225,668,Elemental Mastery,96.0
-"Xiao","12,735",349,799,CRIT Rate,19.2%
-"Xingqiu","10,222",201,757,ATK,24.0%
-"Xinyan","11,201",248,798,ATK,24.0%
-"Yae Miko","10,372",339,568,CRIT Rate,19.2%
-"Yanfei","9,352",240,586,Pyro DMG,24.0%
-"Yaoyao","12,288",212,750,HP,24.0%
-"Yelan","14,450",243,547,CRIT Rate,19.2%
-"Yoimiya","10,164",322,614,CRIT Rate,19.2%
-"YunJin","10,657",191,734,Energy Recharge,26.8%
-"Zhongli","14,695",251,737,Geo DMG,28.8%
+Albedo,13225,251,876,Geo DMG,28.8%
+Alhaitham,13348,313,781,Dendro DMG,28.8%
+Aloy,10898,233,676,Cryo DMG,28.8%
+Amber,9461,223,600,ATK,24.0%
+Ayaka,12858,342,783,CRIT DMG,38.4%
+Ayato,13715,298,768,CRIT DMG,38.4%
+Baizhu,13348,192,499,HP,28.8%
+Barbara,9787,159,668,HP,24.0%
+Beidou,13049,225,648,Electro DMG,24.0%
+Bennett,12397,191,771,Energy Recharge,26.8%
+Candace,10874,212,682,HP,24.0%
+Charlotte,10766,173,546,ATK,24.0%
+Chevreuse,11962,193,605,HP,24.0%
+Chongyun,10983,223,648,ATK,24.0%
+Collei,9787,199,600,ATK,24.0%
+Cyno,12490,318,859,CRIT DMG,24.0%
+Dehya,15674,265,627,HP,28.8%
+Diluc,12980,334,783,CRIT Rate,19.2%
+Diona,9569,212,600,Cryo DMG,24.0%
+Dori,12397,223,723,HP,24.0%
+Eula,13225,342,750,CRIT DMG,38.4%
+Faruzan,9569,196,627,ATK,24.0%
+Fischl,9189,244,593,ATK,24.0%
+Freminet,12071,254.88,708.46,ATK,24.0%
+Furina,15307,244,696,CRIT RATE,19.2%
+Gaming,11418,301,703,ATK,24.0%
+Ganyu,9796,334,630,CRIT DMG,38.4%
+Gorou,9569,182,648,Geo DMG,24.0%
+ShikanoinHeizou,10657,225,683,Anemo DMG,24.0%
+HuTao,15552,106,876,CRIT DMG,38.4%
+AratakiItto,12858,227,959,CRIT Rate,19.2%
+Jean,14695,239,768,Healing,22.0%
+Kaeya,11636,223,791,Energy Recharge,26.8%
+Kaveh,11962,233,750,Elemental Mastery,96.0
+KaedeharaKazuha,13348,296,806,Elemental Mastery,115.2
+Keqing,13103,322,799,CRIT DMG,38.4%
+Kirara,12179,223,546,HP,24.0%
+Klee,10286,310,614,Pyro DMG,28.8%
+SangonomiyaKokomi,13470,234,657,Hydro DMG,28.8%
+KujouSara,9569,195,627,ATK,24.0%
+Layla,11092,216,655,HP,24.0%
+Lisa,9569,231,573,Elemental Mastery,96
+Lynette,12397,231.51,711.87,Anemo DMG,24%
+Lyney,11021,318.11,537.99,CRIT Rate,19.2%
+Mika,12506,223,713,HP,24.0%
+Mona,10409,287,653,Energy Recharge,32.0%
+Nahida,10360,298,630,Elemental Mastery,115.2
+Navia,12650,351,793,CRIT DMG,38.4%
+Neuvillette,14695,208.32,576.42,CRIT DMG,38.4%
+Nilou,15184,229,728,HP,28.8%
+Ningguang,9787,212,573,Geo DMG,24.0%
+Noelle,12071,191,798,DEF,30.0%
+Qiqi,12368,287,922,Healing,22.0%
+RaidenShogun,12907,337,789,Energy Recharge,32.0%
+Razor,11962,233,750,Physical DMG,30.0%
+Rosaria,12288,240,709,ATK,24.0%
+Sayu,11853,244,744,Elemental Mastery,96
+Shenhe,12992,303,830,ATK,28.8%
+KukiShinobu,12288,212,750,HP,24.0%
+Sucrose,9243,169,702,Anemo DMG,24.0%
+Tartaglia,13103,301,814,Hydro DMG,28.8%
+Thoma,10331,201,750,ATK,24.0%
+Tighnari,10849,267,630,Dendro DMG,28.8%
+TravelerGeo,10874,212,682,ATK,24.0%
+TravelerAnemo,10874,212,682,ATK,24.0%
+TravelerElectro,10874,212,682,ATK,24.0%
+TravelerDendro,10874,212,682,ATK,24.0%
+TravelerHydro,10874,212,682,ATK,24.0%
+Venti,10531,263,669,Energy Recharge,32%
+Wanderer,10164,327,607,CRIT Rate,19.2%
+Xiangling,10874,225,668,Elemental Mastery,96.0
+Xiao,12735,349,799,CRIT Rate,19.2%
+Xingqiu,10222,201,757,ATK,24.0%
+Xinyan,11201,248,798,ATK,24.0%
+YaeMiko,10372,339,568,CRIT Rate,19.2%
+Yanfei,9352,240,586,Pyro DMG,24.0%
+Yaoyao,12288,212,750,HP,24.0%
+Yelan,14450,243,547,CRIT Rate,19.2%
+Yoimiya,10164,322,614,CRIT Rate,19.2%
+YunJin,10657,191,734,Energy Recharge,26.8%
+Zhongli,14695,251,737,Geo DMG,28.8%
+Xianyun,10409,334,572,ATK,28.8%
