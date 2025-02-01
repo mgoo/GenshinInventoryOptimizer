@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="">
+        <h5 class="">{{ character.name }}</h5>
+        <div class="">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Level: {{ character.level }}</li>
+                <li class="list-group-item">Max Hp: {{ readable_value('hp', stats.total_hp()) }}</li>
+                <li class="list-group-item">Atk: {{ readable_value('atk', stats.total_atk()) }}</li>
+                <li class="list-group-item">Def: {{ readable_value('def', stats.total_def()) }}</li>
+                {% for display_stat in display_stats %}
+                    <li class="list-group-item">{{ readable(display_stat) }}: {{ readable_value(display_stat, stats[display_stat]) }}</li>
+                {% endfor %}
+
+            </ul>
+        </div>
+        <div  style="display: flex;flex-wrap: wrap;width: 100%">
+
+            <div class="card" style="width: 18rem;">
+                <img src="{{ url_for('static', filename=character.weapon.get_img()) }}" class="card-img-top" alt="Character Weapon" style="width: 7rem;"/>
+                <div class="card-body">
+                    <h5 class="card-title" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis">{{ character.weapon.name }}</h5>
+<!--                    <div class="card-text">-->
+<!--                        <ul class="list-group list-group-flush">-->
+<!--                            <li class="list-group-item">Level: {{ character.level }}</li>-->
+<!--                        </ul>-->
+<!--                    </div>-->
+                </div>
+            </div>
+
+            {% for slot, arti in character.artifacts.items() %}
+                <div class="card" style="width: 18rem;">
+                    <img src="{{ url_for('static', filename=arti.get_img()) }}" class="card-img-top" alt="Artifact {{ slot }}" style="width: 7rem;"/>
+                    <div class="card-body">
+                        <h5 class="card-title" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis">{{ slot }}</h5>
+                        <h6 class="card-title" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis">{{ readable(arti.main_stat) }}: {{ readable_value(arti.main_stat, arti.main_stat_value) }}</h6>
+                        <div class="card-text">
+                            <ul class="list-group list-group-flush">
+                                {% for substat_name, substat_value in arti.sub_stats.items() %}
+                                    <li class="list-group-item">{{ readable(substat_name) }}: {{ readable_value(substat_name, substat_value) }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

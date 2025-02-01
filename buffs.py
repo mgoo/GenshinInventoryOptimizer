@@ -1,40 +1,40 @@
+import autograd.numpy as np
+
 from characters import DmgTypes, Character
 from genshin_data import GenshinData
+from optimizer import OptimizerStatBlock
 from reactions import Reactions
+from stat_block import StatBlock
 
 
 # Characters
 def bennett_builder(bennett: Character, c1=False):
-    def bennett_buff(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
+    def bennett_buff(stat_block: OptimizerStatBlock):
         ratio = 1.12  # TODO assumes lv 12
         if c1:
             ratio += 0.2
-        flat_atk += (ratio * (bennett.char_atk + bennett.wep_atk))
-        return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
+        stat_block = stat_block.add('atk', ratio * (bennett.stat_block['base_atk'] + bennett.weapon.stat_block['base_atk']))
+        return stat_block
     return bennett_buff
 
 
-def sucrose_a1(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-    em += 50
-    return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
+def sucrose_a1(stat_block: OptimizerStatBlock):
+    return stat_block.add('em', 50)
 
 
-def sucrose_a4_builder(sucrose: Character):
-    def sucrose_a4(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-        em += sucrose.em * 0.2
-        return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
+def sucrose_a4_builder(sucrose: Character, buffs=list()):
+    def sucrose_a4(stat_block: OptimizerStatBlock):
+        return stat_block.add('em', sucrose.get_stats(buffs)['em'] * 0.2)
     return sucrose_a4
 
 
-def collei_c4(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-    em += 60
-    return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
+def collei_c4(stat_block: OptimizerStatBlock):
+    return stat_block.add('em', 60)
 
 
-def nahida_a1_builder(highest_em_char):
-    def nahida_a1(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
-        em += min(highest_em_char.em * 0.25, 250)
-        return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
+def nahida_a1_builder(highest_em_char, buffs=list()):
+    def nahida_a1(stat_block: OptimizerStatBlock):
+        return stat_block.add('em', min(highest_em_char.get_stats(buffs)['em'] * 0.25, 250))
     return nahida_a1
 
 
@@ -76,7 +76,7 @@ def thundering_fury_2p(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, f
     dmg_.add_bonus_enum(0.15, GenshinData.ElementTypes.ELECTRO)
     return talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em
 
-
+# TODO expensive
 def thundering_fury_4p(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
     reaction_bonus.add_bonus(0.40, Reactions.OVERLOAD)
     reaction_bonus.add_bonus(0.40, Reactions.CHARGE)
@@ -138,7 +138,7 @@ artifact_buff_quick_add = {
 
 
 # Weapons
-def mistsplitter_builder(stacks):
+def mistsplitter_builder(stacks): # TODO expensive
     def mistsplitter_buff(talent_, atk_,  flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu):
         amounts = [0.08, 0.16, 0.28]
         total_boost = 0.12 + amounts[stacks]

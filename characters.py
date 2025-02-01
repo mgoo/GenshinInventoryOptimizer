@@ -1,12 +1,18 @@
+import os
+import re
 from enum import Enum
 import copy
 
 from genshin_data import GenshinData
 from reactions import ReactionBonuses, Reactions
+from stat_block import StatBlock
 from utils import load_json_data
 
+from artifact import Artifact
+from weapon import Weapon
+
 char_data = GenshinData.load_char_data('resources/genshin_data/genshin_char_data_4_1.csv')
-wep_data = GenshinData.load_weapon_data('resources/genshin_data/genshin_weapon_data.csv')
+
 
 character_cache = dict()
 
@@ -16,35 +22,28 @@ class Account:
         account_data = load_json_data(path)
 
         artifacts = account_data["artifacts"]
-        self.artifacts = GenshinData.tabulate_artifacts(artifacts)
+        self.artifacts = {}
+        for raw_artifact in artifacts:
+            self.artifacts[raw_artifact["id"]] = Artifact.from_raw(raw_artifact)
 
         weapons = account_data['weapons']
-        self.weapons = dict()
-        wep_locations = dict()
-        for weapon in weapons:
-            wep_atk = wep_data.loc[weapon['key']]['ATK']
-            wep_sec = wep_data.loc[weapon['key']]['Secondary']
-            wep_sec_val = wep_data.loc[weapon['key']]['Value']
-            self.weapons[weapon['key']] = {
-                'atk': wep_atk,
-                wep_sec: wep_sec_val
-            }
-            if weapon['location'] != '':
-                wep_locations[weapon['location']] = self.weapons[weapon['key']]
+        self.weapons = {}
+        for raw_wep in weapons:
+            weapon = Weapon(
+                raw_wep['id'], raw_wep['key'],
+                raw_wep['level'], raw_wep['ascension'], raw_wep['refinement'],
+            )
+            self.weapons[weapon.id] = weapon
+            if raw_wep['location'] != '':
+                weapon.add_location(raw_wep['location'])
 
         self.characters = dict()
         for character in account_data['characters']:
-            char_artifact_list = self.artifacts.loc[self.artifacts["location"] == character['key']].to_dict('records')
-            char_artifacts = dict()
-            for artifact in char_artifact_list:
-                artifact = GenshinData.dictionise_row(artifact)
-                char_artifacts[artifact['slot']] = artifact
-
             self.characters[character['key']] = Character(
                 character['key'],
                 character['level'], character['talent']['auto'], character['talent']['skill'], character['talent']['burst'],
-                wep_locations[character['key']],
-                char_artifacts,
+                Weapon.weapon_locations[character['key']],
+                Artifact.artifact_locations[character['key']],
                 char_data.loc[character['key']]
             )
 
@@ -57,156 +56,60 @@ class Character:
         self.skill_level = skill_level
         self.burst_level = burst_level
         self.weapon = weapon
-        self.artifacts = artifacts
 
         self._raw_data = raw_data
 
-        self.crit_dmg = GenshinData.char_base_crit_dmg + (self.weapon['crit_dmg'] if 'crit_dmg' in self.weapon.keys() else 0)
-        self.crit_rate = GenshinData.char_base_crit_rate + (self.weapon['crit_rate'] if 'crit_rate' in self.weapon.keys() else 0)
-        # char data
-        self.char_hp = raw_data["HP"]
-        self.char_atk = raw_data["ATK"]
-        self.char_def = raw_data["DEF"]
+        self.stat_block = StatBlock({
+            'base_atk': raw_data["ATK"],
+            'base_hp': raw_data["HP"],
+            'base_def': raw_data["DEF"],
+            'crit_rate': GenshinData.char_base_crit_rate,
+            'crit_dmg': GenshinData.char_base_crit_dmg
+        }) + StatBlock({
+            raw_data['Ascension Attributes']: raw_data["Ascension Stat"]
+        })
 
-        self.hp_ = weapon['hp_'] if 'hp_' in weapon.keys() else 0
-        self.flat_hp = 0
+        self.artifacts = {
+            'flower': None,
+            'plume': None,
+            'sands': None,
+            'goblet': None,
+            'circlet': None
+        }
+        for artifact in artifacts:
+            self.equip(artifact)
 
-        self.atk_ = weapon['atk_'] if 'atk_' in weapon.keys() else 0
-        self.flat_atk = 0
+    def get_stats(self, buffs=list()):
+        stat_block = self.stat_block + self.weapon.stat_block
+        for artifact in self.artifacts.values():
+            if artifact is not None:
+                stat_block += artifact.total_stat_boost()
+        # for buff in buffs:
+        #     stat_block = buff(
+        #         talent_, stat_block
+        #     )
+        return stat_block
 
-        self.def_ = weapon['def_'] if 'def_' in weapon.keys() else 0
-        self.flat_def = 0
+    def unequip(self, slot):
+        # TODO remove set bonus??
+        self.artifacts.pop(slot)
 
-        self.dmg_ = DmgBonus()
-        if 'phys_' in weapon:
-            self.dmg_.add_bonus(weapon['phys_'], GenshinData.ElementTypes.PHYS)
-        self.em = 0 + weapon['em'] if 'em' in weapon.keys() else 0
+    def equip(self, artifact: 'Artifact'):
+        # Check if there is an existing artifact in the slot
+        if self.artifacts[artifact.slot_key] is not None:
+            # if the existing artifact has the same id then dont do anything
+            if artifact.id == self.artifacts[artifact.slot_key].id:
+                return
+            self.unequip(artifact.slot_key)
 
-        self.wep_atk = weapon['atk']
-
-        # Character Asscension stats
-        if raw_data['Ascension Attributes'] == 'atk_':        self.atk_ += raw_data["Ascension Stat"]
-        elif raw_data['Ascension Attributes'] == 'hp_':       self.hp_ += raw_data["Ascension Stat"]
-        elif raw_data['Ascension Attributes'] == 'def_':      self.def_ += raw_data["Ascension Stat"]
-        elif raw_data['Ascension Attributes'] == 'em':        self.em += raw_data["Ascension Stat"]
-        elif raw_data['Ascension Attributes'] == 'crit_dmg':  self.crit_dmg += raw_data["Ascension Stat"]
-        elif raw_data['Ascension Attributes'] == 'crit_rate': self.crit_rate += raw_data["Ascension Stat"]
-        elif raw_data['Ascension Attributes'] in GenshinData.element_types:
-            self.dmg_.add_bonus(raw_data["Ascension Stat"], raw_data['Ascension Attributes'])
-
-        # Main stats
-        for item in self.artifacts.values():
-            if item['main_stat'] == 'atk':         self.flat_atk += item['main_stat_value']
-            elif item['main_stat'] == 'atk_':      self.atk_ += item['main_stat_value']
-            elif item['main_stat'] == 'hp':        self.flat_hp += item['main_stat_value']
-            elif item['main_stat'] == 'hp_':       self.hp_ += item['main_stat_value']
-            elif item['main_stat'] == 'def_':      self.def_ += item['main_stat_value']
-            elif item['main_stat'] == 'em':        self.em += item['main_stat_value']
-            elif item['main_stat'] == 'crit_dmg':  self.crit_dmg += item['main_stat_value']
-            elif item['main_stat'] == 'crit_rate': self.crit_rate += item['main_stat_value']
-            elif item['main_stat'] in GenshinData.element_types:
-                self.dmg_.add_bonus(item['main_stat_value'], item['main_stat'])
-
-        # Sub stats
-        for item in self.artifacts.values():
-            for stat, value in item['sub_stats'].items():
-                if stat == 'atk':         self.flat_atk += value
-                elif stat == 'atk_':      self.atk_ += value
-                elif stat == 'hp':        self.flat_hp += value
-                elif stat == 'hp_':       self.hp_ += value
-                elif stat == 'def':       self.flat_def += value
-                elif stat == 'def_':      self.def_ += value
-                elif stat == 'em':        self.em += value
-                elif stat == 'crit_dmg':  self.crit_dmg += value
-                elif stat == 'crit_rate': self.crit_rate += value
-
-    def rebuild(self, new_artifacts=None, new_weapon=None):
-        artifacts = new_artifacts if new_artifacts is not None else self.artifacts
-        weapon = new_weapon if new_weapon is not None else self.weapon
-        return Character(self.name, self.level, self.n_level, self.skill_level, self.burst_level, weapon, artifacts, self._raw_data)
-
-    def apply_buffs(self, buffs, reaction=Reactions.NONE, talent_=None):
-        if talent_ is None:
-            talent_ = []
-
-        atk_ = self.atk_
-        flat_atk = self.flat_atk
-        hp_ = self.hp_
-        flat_hp = self.flat_hp
-        def_ = self.def_
-        flat_def = self.flat_def
-        dmg_ = self.dmg_
-        flat_dmg = 0
-        crit_rate = self.crit_rate
-        crit_dmg = self.crit_dmg
-        em = self.em
-
-        def_redu = ElementalWrapper()
-        reaction_bonus = ReactionBonuses()
-
-        for buff in buffs:
-            talent_, atk_, flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, em = buff(
-                talent_, atk_, flat_atk, hp_, flat_hp, def_, flat_def, flat_dmg, crit_rate, crit_dmg, dmg_, em, reaction, reaction_bonus, def_redu
-            )
-
-        self.atk_ = atk_
-        self.flat_atk = flat_atk
-        self.hp_ = hp_
-        self.flat_hp = flat_hp
-        self.def_ = def_
-        self.flat_def = flat_def
-
-        self.crit_rate = crit_rate
-        self.crit_dmg = crit_dmg
-
-        self.em = em
-
-        return talent_, flat_dmg, dmg_, def_redu, reaction_bonus
+        # TODO handle set bonus??
+        self.artifacts[artifact.slot_key] = artifact
 
 
 class Party:
 
     def __init__(self, char1, char2, char3, char4):
         self.characters = (char1, char2, char3, char4)
-
-
-class ElementalWrapper:
-    def __init__(self):
-        self._all = 0
-        self._element = dict()
-        self._locked = False
-        for elem in GenshinData.element_types:
-            self._element[elem] = 0
-
-    def lock(self):
-        self._locked = True
-
-    def get(self, element):
-        if isinstance(element, GenshinData.ElementTypes):
-            element = element.value
-
-        assert element != GenshinData.ElementTypes.ALL.value  # Everything should have an element
-
-        return self._element[GenshinData.ElementTypes.ALL.value] + self._element[element]
-
-    def add_bonus(self, amount, type):
-        if self._locked:
-            raise Exception('Element Wrapper is Locked')
-        if isinstance(type, GenshinData.ElementTypes):
-            type = type.value
-        if type == GenshinData.ElementTypes.ALL.value:
-            self._all += amount
-        elif type in self._element:
-            self._element[type] += amount
-        else:
-            raise Exception("element " + type + "not found")
-
-    def __copy__(self):
-        copy = ElementalWrapper()
-        copy._all = self._all
-        for key, value in self._element.items():
-            copy._element[key] = value
-        return copy
 
 
 class DmgTypes(Enum):
@@ -217,47 +120,4 @@ class DmgTypes(Enum):
     SKILL = 's'
 
 
-class DmgBonus(ElementalWrapper):
-    def __init__(self):
-        super().__init__()
-
-        self._type = dict()
-        for type in DmgTypes:
-            self._type[type.value] = 0
-
-    def get(self, element, type=None):
-        if isinstance(type, DmgTypes):
-            type = type.value
-        return super(DmgBonus, self).get(element) + self._type[type]
-
-    def add_bonus_enum(self, amount, type: (GenshinData.ElementTypes or DmgTypes)):
-        if self._locked:
-            raise Exception('DmgBonus is Locked')
-        if type == GenshinData.ElementTypes.ALL:
-            self._all += amount
-        elif type.value in self._element:
-            self._element[type.value] += amount
-        elif type in self._type:
-            self._type[type.value] += amount
-        else:
-            raise Exception('Unknown dmg Type ' + type)
-
-    def add_bonus(self, amount, type: str):
-        if type == GenshinData.ElementTypes.ALL.value:
-            self._all += amount
-        elif type in self._element:
-            self.add_bonus_enum(amount, GenshinData.ElementTypes(type))
-        elif type in self._type:
-            self.add_bonus_enum(amount, DmgTypes(type))
-        else:
-            raise Exception('Unknown dmg Type ' + type)
-
-    def __copy__(self):
-        copy = DmgBonus()
-        copy._all = self._all
-        for key, value in self._element.items():
-            copy._element[key] = value
-        for key, value in self._type.items():
-            copy._type[key] = value
-        return copy
 

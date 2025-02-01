@@ -5,6 +5,43 @@ import pandas as pd
 from utils import percent_to_dec
 
 
+def readable(stat):
+    stat_to_readable = {
+        'hp': 'HP', 'hp_': 'HP%', 'base_hp': 'HP',
+        'atk': 'ATK', 'atk_': 'ATK%', 'base_atk': 'ATK',
+        'def': 'DEF', 'def_': 'DEF%', 'base_def': 'DEF',
+        'crit_dmg': 'Crit DMG',
+        'crit_rate': 'Crit Rate',
+        'em': 'Elemental Mastery', 'er_': 'Energy Recharge',
+
+        'pyro_': 'Pyro DMG Bonus', 'electro_': 'Electro DMG Bonus',
+        'cryo_': 'Cryo DMG Bonus', 'hydro_': 'Hydro DMG Bonus',
+        'dendro_': 'Dendro DMG Bouns', 'anemo_': 'Anemo DMG Bonus',
+        'geo_': 'Geo DMG Bonus', 'phys_': 'Physical DMG Bonus',
+        'heal_': 'Healing Bonus',
+        'dmg': 'Flat DMG', 'dmg_': 'DMG Bonus', 'elem_': 'Elemental DMG Bonus',
+
+        'swirl_': 'Swirl DMG Bonus', 'shatter_': 'Shatter DMG Bonus',
+        'vape_': 'Vaporise DMG Bonus', 'melt_': 'Melt DMG Bonus',
+        'over_': 'Overload DMG Bonus', 'echarg_': 'Electro Charged DMG Bonus',
+        'bloom_': 'Bloom DMG Bonus', 'hbloom_': 'HyperBloom DMG Bonus',
+        'spread_': 'Spread DMG Bonus', 'agg_': 'Aggravate DMG Bonus', 'burn_': 'Burning DMG Bonus',
+
+        'n_': 'Normal DMG Bonus', 'c_': 'Charged DMG Bonus', 'p_': 'Plunge DMG Bouns',
+        's_': 'Skill DMG Bonus', 'b_': 'Burst DMG Bonus',
+
+        'def_redu_': 'DEF Reduction'
+    }
+    return stat_to_readable[stat]
+
+
+def readable_value(stat, value):
+    if '_' in stat:
+        return '{value:.1%}'.format(value=value)
+    else:
+        return '{value:d}'.format(value=int(value))
+
+
 class GenshinData:
 
     avg_artifact_num = 1.065
@@ -13,6 +50,33 @@ class GenshinData:
 
     char_base_crit_rate = .05
     char_base_crit_dmg = .5
+
+    max_artifact_id = 0
+
+    stat_names = [
+        'hp', 'hp_', 'base_hp',
+        'atk', 'atk_', 'base_atk',
+        'def', 'def_', 'base_def',
+        'crit_dmg',
+        'crit_rate',
+        'em', 'er_',
+    
+        'pyro_', 'electro_',
+        'cryo_', 'hydro_',
+        'dendro_', 'anemo_',
+        'geo_', 'phys_',
+        'heal_',
+        'dmg', 'dmg_', 'elem_',
+
+        'swirl_', 'cryst_', 'shatter_',
+        'vape_', 'melt_', 'over_', 'echarg_',
+        'bloom_', 'hbloom_', 'spread_', 'agg_', 'burn_',
+        'scond_',
+
+        'n_', 'c_', 'p_', 's_', 'b_',
+
+        'def_redu_'
+    ]
 
     stat_name_mapping = {
         "hp":  ["HP"],  "hp_":  ["HP%"],
@@ -32,7 +96,7 @@ class GenshinData:
         "geo_":     ["geo_dmg_", "Geo DMG"],
         "phys_":    ["physical_dmg_", "Physical DMG", "PhysicalDMGBonus"],
 
-        "healing_": ["heal_", "Healing"]
+        "heal_": ["healing_", "Healing"]
     }
 
     class ElementTypes(Enum):
@@ -58,7 +122,6 @@ class GenshinData:
             if stat in item:
                 return key
 
-
     sub_stat_rolls = [1, 0.9, 0.8, 0.7]
 
     possible_sub_stats = {
@@ -83,7 +146,7 @@ class GenshinData:
         "er_": {"max_value": .518},
         "crit_rate": {"max_value": .311},
         "crit_dmg": {"max_value": .622},
-        "healing_": {"max_value": .359},
+        "heal_": {"max_value": .359},
         "pyro_": {"max_value": .466},
         "electro_": {"max_value": .466},
         "cryo_": {"max_value": .466},
@@ -99,35 +162,10 @@ class GenshinData:
         "plume":   {"atk": 1},
         "sands":   {"hp_": .2668, "atk_": .2666, "def_": .2666, "er_": .1, "em": .1},
         "goblet":  {"hp_": .1925, "atk_": .1925, "def_": .19, "em": .025, "pyro_": .05, "electro_": .05, "cryo_": .05, "hydro_": .05, "dendro_": .05, "anemo_": .05, "geo_": .05, "phys_": .05},
-        "circlet": {"hp_": .22, "atk_": .22, "def_": .22, "crit_rate": .1, "crit_dmg": .1, "healing_": .1, "em": .04}
+        "circlet": {"hp_": .22, "atk_": .22, "def_": .22, "crit_rate": .1, "crit_dmg": .1, "heal_": .1, "em": .04}
     }
 
     _cache_load_artifact_main_stat_data = dict()
-
-    @staticmethod
-    def tabulate_artifacts(artifacts):
-        artifact_list = []
-        for artifact in artifacts:
-            row = dict()
-            row["set"] = artifact["setKey"]
-            row["rarity"] = artifact["rarity"]
-            row["level"] = artifact["level"]
-            row["slot"] = artifact["slotKey"]
-            row["main_stat"] = GenshinData.fix_stat_name(artifact["mainStatKey"])
-            row["main_stat_value"] = GenshinData.get_main_stat_value(
-                GenshinData.fix_stat_name(artifact["mainStatKey"]),
-                artifact["level"]
-            )
-            row["location"] = artifact["location"]
-
-            substats = dict()
-            for substat in artifact["substats"]:
-                key = GenshinData.fix_stat_name(substat["key"])
-                substats[key] = substat["value"] / 100 if "_" in key else substat["value"]
-            for key, item in GenshinData.possible_sub_stats.items():
-                row[key] = 0 if key not in substats.keys() else substats[key]
-            artifact_list.append(row)
-        return pd.DataFrame(artifact_list)
 
     @staticmethod
     def load_char_data(path):
@@ -189,7 +227,7 @@ class GenshinData:
             "hp_": "HP%", "atk_": "ATK%", "def_": "DEF%",
             "er_": "Energy Recharge%", "em": "Elemental Mastery",
             "pyro_": "Elemental DMG%", "electro_": "Elemental DMG%", "cryo_": "Elemental DMG%", "hydro_": "Elemental DMG%", "dendro_": "Elemental DMG%", "anemo_": "Elemental DMG%", "geo_": "Elemental DMG%", "phys_": "Elemental DMG%",
-            "crit_rate": "Crit Rate%", "crit_dmg": "Crit DMG%", "healing_": "Healing Bonus%"
+            "crit_rate": "Crit Rate%", "crit_dmg": "Crit DMG%", "heal_": "Healing Bonus%"
         }
 
         main_stat_data = GenshinData.get_artifact_main_stat_data("resources/genshin_data/artifact_main_stat.csv")

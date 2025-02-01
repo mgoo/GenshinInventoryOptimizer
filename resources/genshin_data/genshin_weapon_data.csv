@@ -140,7 +140,7 @@ Rainslasher,510,ElementalMastery,165
 RoyalGreatsword,565,ATK,27.6%
 SacrificialGreatsword,565,EnergyRecharge,30.6%
 SerpentSpine,510,CRITRate,27.6%
-Snow-TombedStarsilver,565,PhysicalDMGBonus,34.5%
+SnowTombedStarsilver,565,PhysicalDMGBonus,34.5%
 TheBell,510,HP,41.3%
 Whiteblind,510,DEF,51.7%
 Akuoumaru,510,ATK,41.3%
@@ -165,3 +165,11 @@ SharpshootersOath,401,CRITDMG,46.9%
 RavenBow,448,ElementalMastery,94
 TwinNephrite,448,CRITRATE,15.6%
 DebateClub,401,ATK,35.2%
+EndOfTheLine,510,EnergyRecharge,45.9%
+Messenger,448,CRITDMG,31.2%
+MagicGuide,354,ElementalMastery,187
+EmeraldOrb,448,ElementalMastery,94
+Halberd,448,ATK,23.4%
+WhiteTassel,401,CRITRATE,23.4%
+BloodtaintedGreatsword,354,ElementalMastery,187
+FilletBlade,401,ATK,35.2%

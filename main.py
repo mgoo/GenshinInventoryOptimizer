@@ -7,7 +7,7 @@ from pandas import ExcelWriter
 from tqdm import tqdm
 import multiprocessing
 
-import buffs
+from buffs import *
 from characters import Account, character_cache
 from optimizer import Optimizer
 from utils import load_json_data
@@ -15,7 +15,7 @@ from utils import load_json_data
 from genshin_data import GenshinData
 
 
-def all_possibilities(artifact, rolls_left):
+def all_possibilities(artifacts):
     """
     Finds all possible options when leveling an artifact to 20
     # TODO weight based on new substat!!
@@ -24,46 +24,55 @@ def all_possibilities(artifact, rolls_left):
     :return:
     """
     # Exit Condition
-    if rolls_left == 0:
-        return [artifact]
+    if all([0 == 5 - math.floor(artifact['level'] / 4) for artifact in artifacts.values()]):
+        return [artifacts]
 
-    #Operation
-    possibilities = []
-    if len(artifact['sub_stats']) != 4:
-        # Add Substat
-        # TODO handle weighting properly!!
-        for sub_stat in GenshinData.possible_sub_stats.keys():
-            if sub_stat in artifact['sub_stats']:
-                continue
-            # for rv in sub_stat_rolls:
-            #     possibility = copy.deepcopy(artifact)
-            #     possibility['sub_stats'][sub_stat] = possible_sub_stats[sub_stat]['max_roll'] * rv
-            #     possibilities.append(possibility)
-            possibility = copy.deepcopy(artifact)
-            possibility['sub_stats'][sub_stat] = GenshinData.possible_sub_stats[sub_stat]['max_roll'] * .85
-            possibilities.append(possibility)
-    else:
-        # Add roll
-        for sub_stat in artifact['sub_stats']:
-            # for rv in sub_stat_rolls:
-            #     possibility = copy.deepcopy(artifact)
-            #     possibility['sub_stats'][sub_stat] += possible_sub_stats[sub_stat]['max_roll'] * rv
-            #     possibilities.append(possibility)
-            possibility = copy.deepcopy(artifact)
-            possibility['sub_stats'][sub_stat] += GenshinData.possible_sub_stats[sub_stat]['max_roll'] * .85
-            possibilities.append(possibility)
-    # Recursion
     res = []
-    for possibility in possibilities:
-        for final_pos in all_possibilities(possibility, rolls_left - 1):
-            res.append(final_pos)
+    for slot, artifact in artifacts.items():
+
+        rolls_left = 5 - math.floor(artifact['level'] / 4)
+        if rolls_left == 0:
+            continue
+
+        #Operation
+        possibilities = []
+        if len(artifact['sub_stats']) != 4:
+            # Add Substat
+            # TODO handle weighting properly!!
+            for sub_stat in GenshinData.possible_sub_stats.keys():
+                if sub_stat in artifact['sub_stats']:
+                    continue
+                possibility = dict(artifact)
+                possibility['sub_stats'] = dict(artifact['sub_stats'])
+                GenshinData.max_artifact_id += 1
+                possibility['id'] = GenshinData.max_artifact_id
+
+                possibility['sub_stats'][sub_stat] = GenshinData.possible_sub_stats[sub_stat]['max_roll'] * .85
+                possibilities.append(possibility)
+        else:
+            # Add roll
+            for sub_stat in artifact['sub_stats']:
+                possibility = dict(artifact)
+                possibility['sub_stats'] = dict(artifact['sub_stats'])
+                GenshinData.max_artifact_id += 1
+                possibility['id'] = GenshinData.max_artifact_id
+
+                possibility['sub_stats'][sub_stat] += GenshinData.possible_sub_stats[sub_stat]['max_roll'] * .85
+                possibilities.append(possibility)
+        # Recursion
+        for possibility in possibilities:
+            possibility['level'] = min(possibility['level'] + 4, 20)
+            possible_set = copy.copy(artifacts)
+            possible_set[slot] = possibility
+            for final_pos in all_possibilities(possible_set):
+                res.append(final_pos)
     return res
 
 
 if __name__ == '__main__':
-    # pool = multiprocessing.Pool(8)
+    pool = multiprocessing.Pool(8)
 
-    account = Account("resources/account_data/genshinData_GOOD_2024_04_20_18_33.json")
+    account = Account("resources/account_data/genshinData_GOOD_2024_04_22_20_23.json")
 
     char_data = GenshinData.load_char_data("resources/genshin_data/genshin_char_data_4_1.csv")
 
@@ -75,34 +84,39 @@ if __name__ == '__main__':
 
     character = account.characters[character_name]
 
-    # Cache party to speed up calcs
     sucrose = account.characters['Sucrose']
-    sucrose.apply_buffs([buffs.collei_c4])
-    character_cache['Sucrose'] = sucrose
+    sucrose.apply_buffs([collei_c4])
+
+    character.apply_buffs([
+        vv_4p_builder(GenshinData.ElementTypes.ELECTRO), sucrose_a1, sucrose_a4_builder(sucrose),
+        collei_c4,
+        mistsplitter_builder(2)
+    ])
+
+    initial_artifacts = copy.deepcopy(character.artifacts)
 
     results = {}
-    for slot_to_optimize in ['flower', 'plume', 'sands', 'circlet', 'goblet']:
+    for slot_to_optimize in ['flower', 'plume', 'sands', 'goblet', 'circlet']:
         print('***' + slot_to_optimize + '***')
 
         if slot_to_optimize == 'goblet':
-            tf_artifacts = account.artifacts[(account.artifacts['main_stat'] == element) & (account.artifacts['slot'] == slot_to_optimize)].to_dict('records')
+            tf_artifacts = account.artifacts[(account.artifacts['main_stat'] == element) & (account.artifacts['slot'] == slot_to_optimize) & (account.artifacts['rarity'] == 5)].to_dict('records')
         else:
-            tf_artifacts = account.artifacts[(account.artifacts['set'] == set) & (account.artifacts['slot'] == slot_to_optimize)].to_dict('records')
+            tf_artifacts = account.artifacts[(account.artifacts['set'] == set) & (account.artifacts['slot'] == slot_to_optimize) & (account.artifacts['rarity'] == 5)].to_dict('records')
             # tf_artifacts = artifacts_df[(artifacts_df['slot'] == slot_to_optimize)].to_dict('records')
 
         calced_artifacts = []
         for idx, artifact in enumerate(tf_artifacts):
-            rolls_left = 5 - math.floor(artifact['level'] / 4)
+
             # convert artifact to find all possibilities
             artifact['main_stat_value'] = GenshinData.possible_main_stats[artifact['main_stat']]['max_value']
-            artifact['sub_stats'] = {}
-            for sub_stat in GenshinData.possible_sub_stats.keys():
-                if artifact[sub_stat] != 0:
-                    artifact['sub_stats'][sub_stat] = artifact[sub_stat]
-                artifact.pop(sub_stat)
+            artifact = GenshinData.dictionise_row(artifact)
+            artifact[artifact['slot']] = artifact
 
             # Find all possible options when leveling up the artifact
-            options = all_possibilities(copy.deepcopy(artifact), rolls_left)
+            artifacts = copy.deepcopy(initial_artifacts)
+            artifacts[slot_to_optimize] = artifact
+            options = all_possibilities(artifacts)
 
             values = [
                 Optimizer().get_value(option, character, account)

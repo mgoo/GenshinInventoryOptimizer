@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="display: flex;flex-wrap: wrap;width: 100%;">
+    {% for character, img_url, arti_url, wep_url in characters %}
+    <div class="card" style="width: 18rem;" onclick="window.location.href='/character/{{ character.name }}'">
+        <img src="{{ url_for('static', filename=img_url) }}" class="card-img-top" alt="{{ character.name }} image" />
+        <div class="card-body">
+            <h5 class="card-title" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis">{{ character.name }}</h5>
+
+            <div class="card-text">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Level: {{ character.level }}</li>
+                </ul>
+            </div>
+
+            <img src="{{ url_for('static', filename=arti_url) }}" alt="artifact" style="width: 7rem;"/>
+            <img src="{{ url_for('static', filename=wep_url) }}" alt="artifact" style="width: 7rem;"/>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
