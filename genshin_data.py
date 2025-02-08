@@ -21,7 +21,7 @@ def readable(stat):
         'heal_': 'Healing Bonus',
         'dmg': 'Flat DMG', 'dmg_': 'DMG Bonus', 'elem_': 'Elemental DMG Bonus',
 
-        'swirl_': 'Swirl DMG Bonus', 'shatter_': 'Shatter DMG Bonus',
+        'swirl_': 'Swirl DMG Bonus', 'shatter_': 'Shatter DMG Bonus', 'scond_': 'Superconduct DMG Bonus',
         'vape_': 'Vaporise DMG Bonus', 'melt_': 'Melt DMG Bonus',
         'over_': 'Overload DMG Bonus', 'echarg_': 'Electro Charged DMG Bonus',
         'bloom_': 'Bloom DMG Bonus', 'hbloom_': 'HyperBloom DMG Bonus',
@@ -36,7 +36,7 @@ def readable(stat):
 
 
 def readable_value(stat, value):
-    if '_' in stat:
+    if 'crit' in stat or stat.endswith('_'):
         return '{value:.1%}'.format(value=value)
     else:
         return '{value:d}'.format(value=int(value))
@@ -65,6 +65,16 @@ class GenshinData:
         'cryo_', 'hydro_',
         'dendro_', 'anemo_',
         'geo_', 'phys_',
+
+        'pyro_crit_dmg', 'pyro_crit_rate',
+        'electro_crit_dmg', 'electro_crit_rate',
+        'cryo_crit_dmg', 'cryo_crit_rate',
+        'hydro_crit_dmg', 'hydro_crit_rate',
+        'dendro_crit_dmg', 'dendro_crit_rate',
+        'anemo_crit_dmg', 'anemo_crit_rate',
+        'geo_crit_dmg', 'geo_crit_rate',
+        'phys_crit_dmg', 'phys_crit_rate',
+
         'heal_',
         'dmg', 'dmg_', 'elem_',
 
@@ -74,8 +84,17 @@ class GenshinData:
         'scond_',
 
         'n_', 'c_', 'p_', 's_', 'b_',
+        'n_crit_dmg', 'n_crit_rate',
+        'c_crit_dmg', 'c_crit_rate',
+        'p_crit_dmg', 'p_crit_rate',
+        's_crit_dmg', 's_crit_rate',
+        'b_crit_dmg', 'b_crit_rate',
 
-        'def_redu_'
+        'def_redu_',
+        'def_redu_pyro_', 'def_redu_electro_',
+        'def_redu_cryo_', 'def_redu_hydro_',
+        'def_redu_dendro_', 'def_redu_anemo_',
+        'def_redu_geo_', 'def_redu_phys_',
     ]
 
     stat_name_mapping = {
@@ -100,7 +119,7 @@ class GenshinData:
     }
 
     class ElementTypes(Enum):
-        ALL = "all_"
+        ALL = "elem_"
         PYRO = "pyro_"
         ELECTRO = "electro_"
         CRYO = "cryo_"

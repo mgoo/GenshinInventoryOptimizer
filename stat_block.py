@@ -24,6 +24,10 @@ class StatBlock:
     def get_non_zero(self):
         return {key:value for key, value in self._stats.items() if value != 0}
 
+    def add(self, stat, value):
+        new_block = StatBlock({stat: value})
+        return self + new_block
+
     def __add__(self, other):
         return StatBlock({key: self._stats[key] + other._stats[key] for key in self._stats.keys()})
 

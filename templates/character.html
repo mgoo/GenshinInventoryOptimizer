@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 
+{% from 'partials/artifact_card.html' import artifact_card %}
+{% from 'partials/weapon_card.html' import weapon_card %}
+
 {% block content %}
 <div class="container-fluid">
-    <div class="">
-        <h5 class="">{{ character.name }}</h5>
-        <div class="">
+    <div>
+        <h5>{{ character.name }}</h5>
+        <div>
             <ul class="list-group list-group-flush">
                 <li class="list-group-item">Level: {{ character.level }}</li>
                 <li class="list-group-item">Max Hp: {{ readable_value('hp', stats.total_hp()) }}</li>
@@ -17,38 +20,73 @@
             </ul>
         </div>
         <div  style="display: flex;flex-wrap: wrap;width: 100%">
-
-            <div class="card" style="width: 18rem;">
-                <img src="{{ url_for('static', filename=character.weapon.get_img()) }}" class="card-img-top" alt="Character Weapon" style="width: 7rem;"/>
-                <div class="card-body">
-                    <h5 class="card-title" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis">{{ character.weapon.name }}</h5>
-<!--                    <div class="card-text">-->
-<!--                        <ul class="list-group list-group-flush">-->
-<!--                            <li class="list-group-item">Level: {{ character.level }}</li>-->
-<!--                        </ul>-->
-<!--                    </div>-->
+            {{ weapon_card(readable, readable_value, character.weapon) }}
+            {% for slot, arti in character.artifacts.items() %}
+                {{ artifact_card(readable, readable_value, slot, arti) }}
+            {% endfor %}
+        </div>
+        <form method="GET" id="optimizer-options">
+            <h5>Optimizer</h5>
+            <div class="row">
+                <div class="input-group col">
+                    <span class="input-group-text" id="target-label">Target</span>
+                    <select class="form-select" aria-describedby="target-label" id="target">
+                        {% for target in targets %}
+                            <option value="{{ target[0] }}">{{ target[1].name() }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
-
-            {% for slot, arti in character.artifacts.items() %}
-                <div class="card" style="width: 18rem;">
-                    <img src="{{ url_for('static', filename=arti.get_img()) }}" class="card-img-top" alt="Artifact {{ slot }}" style="width: 7rem;"/>
-                    <div class="card-body">
-                        <h5 class="card-title" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis">{{ slot }}</h5>
-                        <h6 class="card-title" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis">{{ readable(arti.main_stat) }}: {{ readable_value(arti.main_stat, arti.main_stat_value) }}</h6>
-                        <div class="card-text">
-                            <ul class="list-group list-group-flush">
-                                {% for substat_name, substat_value in arti.sub_stats.items() %}
-                                    <li class="list-group-item">{{ readable(substat_name) }}: {{ readable_value(substat_name, substat_value) }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
+            <div class="row">
+                <div class="input-group col">
+                    <span class="input-group-text" id="arti-set-label">Artifact Set</span>
+                    <select class="form-select" aria-describedby="arti-set-label" id="arti-set">
+                        {% for set in sets %}
+                            <option value="{{ set }}">{{ set }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-            {% endfor %}
+                <div class="input-group col">
+                    <span class="input-group-text" id="offset-label">Offset Slot</span>
+                    <select class="form-select" aria-describedby="offset-label" id="offset">
+                        <option value="flower">flower</option>
+                        <option value="plume">plume</option>
+                        <option value="sands">sands</option>
+                        <option value="goblet" selected>goblet</option>
+                        <option value="circlet">circlet</option>
+                    </select>
+                </div>
+            </div>
+            <input type="submit" id="optimize">
+        </form>
+        <div  style="display: flex;flex-wrap: wrap;width: 100%" id="optimizer-results">
 
         </div>
     </div>
-
 </div>
+
+
+<script>
+    $(document).ready(function(){
+        $('form#optimizer-options').submit(function(event) {
+            event.preventDefault();
+
+            $.ajax({
+                type: 'GET',
+                url: '/optimize/{{ account_id }}/{{ character_id }}',
+                data: {
+                    target: $('#target').find(':selected').val(),
+                    arti_set: $('#arti-set').find(':selected').val(),
+                    offset_slot: $('#offset').find(':selected').val()
+                }
+            }).done(function(data) {
+                console.log(data);
+                $('#optimizer-results').html(data['best_loadout'])
+                return true;
+            });
+
+            return true;
+        });
+    })
+</script>
 {% endblock %}

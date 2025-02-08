@@ -1,22 +1,131 @@
 {% extends "base.html" %}
-{% block content %}
-<div style="display: flex;flex-wrap: wrap;width: 100%;">
-    {% for character, img_url, arti_url, wep_url in characters %}
-    <div class="card" style="width: 18rem;" onclick="window.location.href='/character/{{ character.name }}'">
-        <img src="{{ url_for('static', filename=img_url) }}" class="card-img-top" alt="{{ character.name }} image" />
-        <div class="card-body">
-            <h5 class="card-title" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis">{{ character.name }}</h5>
 
-            <div class="card-text">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">Level: {{ character.level }}</li>
-                </ul>
+{% block extrahead %}
+<style>
+    .equipment {
+        background-color: rgba(255, 255, 255, 0.7);
+        border: 1px solid #CCCCCC;
+        border-radius: 5px;
+        width: 6rem;
+        position: absolute;
+        bottom: 0;
+        z-index: 10;
+        aspect-ratio: 1 / 1;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div>
+    <div class="btn-group float-start">
+        <input type="radio" name="element-filter" id="none-element-filter" value="none" class="btn-check" autocomplete="off" checked>
+        <label for="none-element-filter" class="btn form-check-label btn-outline-success">
+            <img src="{{ url_for('static', filename='img/icons/no_filter.jpg') }}" style="height: 24pt;width: 24pt">
+        </label>
+        <input type="radio" name="element-filter" id="anemo-element-filter" value="anemo" class="btn-check" autocomplete="off">
+        <label for="anemo-element-filter" class="btn form-check-label btn-outline-success">
+            <img src="{{ url_for('static', filename='img/icons/Element_Anemo.svg') }}" style="height: 24pt;width: 24pt">
+        </label>
+        <input type="radio" name="element-filter" id="cryo-element-filter" value="cryo" class="btn-check" autocomplete="off">
+        <label for="cryo-element-filter" class="btn form-check-label btn-outline-success">
+            <img src="{{ url_for('static', filename='img/icons/Element_Cryo.svg') }}" style="height: 24pt;width: 24pt">
+        </label>
+        <input type="radio" name="element-filter" id="dendro-element-filter" value="dendro" class="btn-check" autocomplete="off">
+        <label for="dendro-element-filter" class="btn form-check-label btn-outline-success">
+            <img src="{{ url_for('static', filename='img/icons/Element_Dendro.svg') }}" style="height: 24pt;width: 24pt">
+        </label>
+        <input type="radio" name="element-filter" id="electro-element-filter" value="electro" class="btn-check" autocomplete="off">
+        <label for="electro-element-filter" class="btn form-check-label btn-outline-success">
+            <img src="{{ url_for('static', filename='img/icons/Element_Electro.svg') }}" style="height: 24pt;width: 24pt">
+        </label>
+        <input type="radio" name="element-filter" id="geo-element-filter" value="geo" class="btn-check" autocomplete="off">
+        <label for="geo-element-filter" class="btn form-check-label btn-outline-success">
+            <img src="{{ url_for('static', filename='img/icons/Element_Geo.svg') }}" style="height: 24pt;width: 24pt">
+        </label>
+        <input type="radio" name="element-filter" id="hydro-element-filter" value="hydro" class="btn-check" autocomplete="off">
+        <label for="hydro-element-filter" class="btn form-check-label btn-outline-success">
+            <img src="{{ url_for('static', filename='img/icons/Element_Hydro.svg') }}" style="height: 24pt;width: 24pt">
+        </label>
+        <input type="radio" name="element-filter" id="pyro-element-filter" value="pyro" class="btn-check" autocomplete="off">
+        <label for="pyro-element-filter" class="btn form-check-label btn-outline-success">
+            <img src="{{ url_for('static', filename='img/icons/Element_Pyro.svg') }}" style="height: 24pt;width: 24pt">
+        </label>
+    </div>
+    <div class="btn-group float-end">
+        <input type="radio" name="weapon-filter" id="none-weapon-filter" value="none" class="btn-check" autocomplete="off" checked>
+        <label for="none-weapon-filter" class="btn form-check-label btn-outline-primary">
+            <img src="{{ url_for('static', filename='img/icons/no_filter.jpg') }}" style="height: 24pt;width: 24pt">
+        </label>
+        <input type="radio" name="weapon-filter" id="bow-weapon-filter" value="bow" class="btn-check" autocomplete="off">
+        <label for="bow-weapon-filter" class="btn form-check-label btn-outline-primary">
+            <img src="{{ url_for('static', filename='img/icons/Icon_Bow.webp') }}" style="height: 24pt;width: 24pt">
+        </label>
+        <input type="radio" name="weapon-filter" id="catalyst-weapon-filter" value="catalyst" class="btn-check" autocomplete="off">
+        <label for="catalyst-weapon-filter" class="btn form-check-label btn-outline-primary">
+            <img src="{{ url_for('static', filename='img/icons/Icon_Catalyst.webp') }}" style="height: 24pt;width: 24pt">
+        </label>
+        <input type="radio" name="weapon-filter" id="claymore-weapon-filter" value="claymore" class="btn-check" autocomplete="off">
+        <label for="claymore-weapon-filter" class="btn form-check-label btn-outline-primary">
+            <img src="{{ url_for('static', filename='img/icons/Icon_Claymore.webp') }}" style="height: 24pt;width: 24pt">
+        </label>
+        <input type="radio" name="weapon-filter" id="polearm-weapon-filter" value="polearm" class="btn-check" autocomplete="off">
+        <label for="polearm-weapon-filter" class="btn form-check-label btn-outline-primary">
+            <img src="{{ url_for('static', filename='img/icons/Icon_Polearm.webp') }}" style="height: 24pt;width: 24pt">
+        </label>
+        <input type="radio" name="weapon-filter" id="sword-weapon-filter" value="sword" class="btn-check" autocomplete="off">
+        <label for="sword-weapon-filter" class="btn form-check-label btn-outline-primary">
+            <img src="{{ url_for('static', filename='img/icons/Icon_Sword.webp') }}" style="height: 24pt;width: 24pt">
+        </label>
+    </div>
+</div>
+<div class="d-flex flex-wrap justify-content-center" style="width: 100%">
+    {% for character, img_url, arti_url, wep_url in characters %}
+    <div class="filterable col-lg-3 {{character.element}} {{character.weapon_class}}" onclick="window.location.href='/character/{{account_id}}/{{ character.name }}'" style="margin: 0">
+        <div class="card">
+            <div style="background: url('{{ url_for('static', filename=img_url) }}') 0 0 no-repeat;background-size:cover;aspect-ratio : 1 / 1;position: relative;" class="card-img-top">
+                <img class="equipment" src="{{ url_for('static', filename=arti_url) }}" alt="artifact" style=""/>
+                <img class="equipment" src="{{ url_for('static', filename=wep_url) }}" alt="artifact" style="right: 0"/>
             </div>
 
-            <img src="{{ url_for('static', filename=arti_url) }}" alt="artifact" style="width: 7rem;"/>
-            <img src="{{ url_for('static', filename=wep_url) }}" alt="artifact" style="width: 7rem;"/>
+            <div class="card-body">
+                <h5 class="card-title" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis">{{ character.name }}</h5>
+
+                <div class="card-text">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Level: {{ character.level }}</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
     {% endfor %}
 </div>
+
+<script>
+    function apply_filter(element, weapon){
+        $('div.filterable').each(function(index) {
+            if (($(this).hasClass(element) || element == 'none') && ($(this).hasClass(weapon) || weapon == 'none')) {
+                if ($(this).is(':hidden')) {
+                    $(this).show();
+                }
+            } else {
+                if ($(this).is(':visible')) {
+                    $(this).hide();
+                }
+            }
+        });
+    }
+
+    $(document).ready(function(){
+        $('input[name="weapon-filter"]').change(function() {
+            let element_filter = $('input[name="element-filter"]:checked').val();
+            apply_filter(element_filter, this.value);
+        });
+        $('input[name="element-filter"]').change(function() {
+            let weapon_filter = $('input[name="weapon-filter"]:checked').val();
+            apply_filter(this.value, weapon_filter);
+        });
+    })
+</script>
 {% endblock %}

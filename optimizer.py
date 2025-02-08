@@ -1,14 +1,17 @@
-from functools import reduce
+from collections import defaultdict
 
-import autograd.numpy as np
-from autograd import grad, elementwise_grad
-import collections
+import torch
+from torch.nn.functional import softmax
 
-from buffs import *
-from characters import DmgTypes, Character, character_cache, Account
-from reactions import Reactions, ReactionBonuses
+import plotly.graph_objects as go
+import plotly.express as px
+import pandas as pd
+
+from characters import Account
 from genshin_data import GenshinData
 from stat_block import StatBlock
+
+from optimization_targets import KeqingAgg
 
 
 class OptimizerStatBlock(StatBlock):
@@ -23,7 +26,7 @@ class OptimizerStatBlock(StatBlock):
 
     def __init__(self, values: dict):
         super().__init__(values)
-        self._stats = np.array([values[stat] if stat in values else 0 for stat in self.parameter_names], dtype=np.float64)
+        self._stats = torch.tensor([values[stat] if stat in values else 0 for stat in self.parameter_names], dtype=torch.float64)
 
     def get_idx(self, stat):
         return self.parameter_names.index(stat)
@@ -53,7 +56,8 @@ class OptimizerStatBlock(StatBlock):
             new_block._stats = self._stats + other._stats
             return new_block
         elif isinstance(other, StatBlock):
-            raise Exception('not yet implemented')
+            opt_other = OptimizerStatBlock.from_stat_block(other)
+            return self + opt_other
         raise Exception('not accepted type')
 
     def __sub__(self, other):
@@ -70,212 +74,183 @@ class OptimizerStatBlock(StatBlock):
         return self._stats
 
 
-def atk_scaler_builder(scale):
-    def atk_scale(stat_block):
-        return scale * stat_block.total_atk()
-    return atk_scale
+def artifact_filter_4p(account, set, offset_slot):
+    results = []
+    for artifact in account.artifacts.values():
+        if artifact.set_key == set or artifact.slot_key == offset_slot:
+            results.append(artifact)
+    return results
 
-
-def em_scaler_builder(scale):
-    def em_scale(stat_block):
-        return scale * stat_block['em']
-    return em_scale
-
-
-def hp_scaler_builder(scale):
-    def hp_scale(stat_block):
-        return scale * stat_block.total_hp()
-    return hp_scale
-
-
-def defence_scaler_builder(scale):
-    def defence_scale(stat_block):
-        return scale * stat_block.total_def()
-    return defence_scale
-
-
-# For Keqing!!
-def calc_dmg(stats, account):
-
-    # artifact_sets = collections.Counter([item['set'] for item in character.artifacts.values()])
-    # for set, number in artifact_sets.items():
-    #     if number >= 2:
-    #         buffs.append(artifact_buff_quick_add[set + '2'])
-    #     if number >= 4:
-    #         buffs.append(artifact_buff_quick_add[set + '4'])
-
-
-    buffs = [
-        bennett_builder(account.characters['Bennett'], c1=True)
-    ]
-
-    n =        char_dmg([atk_scaler_builder(.81)], stats, buffs, DmgTypes.NORMAL, GenshinData.ElementTypes.ELECTRO , reaction=Reactions.AGG)
-    c_1_agg =  char_dmg([atk_scaler_builder(1.51)], stats, buffs, DmgTypes.CHARGE, GenshinData.ElementTypes.ELECTRO, reaction=Reactions.AGG)
-    c_2 =      char_dmg([atk_scaler_builder(1.70)], stats, buffs, DmgTypes.CHARGE, GenshinData.ElementTypes.ELECTRO)
-
-    e =        char_dmg([atk_scaler_builder(.9072)], stats, buffs, DmgTypes.SKILL, GenshinData.ElementTypes.ELECTRO)
-    e_recast = char_dmg([atk_scaler_builder(3.024)], stats, buffs, DmgTypes.SKILL, GenshinData.ElementTypes.ELECTRO)
-
-    q_init =   char_dmg([atk_scaler_builder(1.584)], stats, buffs, DmgTypes.BURST, GenshinData.ElementTypes.ELECTRO, reaction=Reactions.AGG)
-    q_c =      char_dmg([atk_scaler_builder(0.4328)], stats, buffs, DmgTypes.BURST, GenshinData.ElementTypes.ELECTRO)
-    q_c_agg =  char_dmg([atk_scaler_builder(0.4328)], stats, buffs, DmgTypes.BURST, GenshinData.ElementTypes.ELECTRO, reaction=Reactions.AGG)
-    q_final =  char_dmg([atk_scaler_builder(3.3984)], stats, buffs, DmgTypes.BURST, GenshinData.ElementTypes.ELECTRO, reaction=Reactions.AGG)
-
-    return e + q_init + q_c * 6 + q_c_agg * 2 + q_final + e_recast + n + c_1_agg + c_2 + n + c_1_agg + c_2 + e + e_recast + n + c_1_agg + c_2 + n + c_1_agg + c_2
-
-# For Alhatham!!!!
-# def calc_dmg(self, character, account):
-#     """
-#     Calculates a damage number that is used as a heuristic for how good an artifact is
-#     :param character:
-#     :param account
-#     :return:
-#     """
-#
-#     buffs = [
-#         nahida_a1_builder(account.characters['Nahida']), thousand_dreams_builder(same=True), deepwood_4p
-#     ]
-#
-#     artifact_buff_quick_add['GildedDreams4'] = gildeddreams_4p_builder(same=1, diff=2)
-#     artifact_sets = collections.Counter([item['set'] for item in character.artifacts.values()])
-#     for set, number in artifact_sets.items():
-#         if number >= 2:
-#             buffs.append(artifact_buff_quick_add[set + '2'])
-#         if number >= 4:
-#             buffs.append(artifact_buff_quick_add[set + '4'])
-#
-#     q = self.char_dmg(
-#         [atk_scaler_builder(2.1888), em_scaler_builder(1.751)],
-#         character, DmgTypes.BURST, GenshinData.ElementTypes.DENDRO,
-#         buffs=buffs, reaction=Reactions.SPREAD
-#     )
-#     e = self.char_dmg(
-#         [atk_scaler_builder(3.4848), em_scaler_builder(2.7878)],
-#         character, DmgTypes.SKILL, GenshinData.ElementTypes.DENDRO,
-#         buffs=buffs
-#     )
-#     m1 = self.char_dmg(
-#         [atk_scaler_builder(1.2096), em_scaler_builder(2.4192)],
-#         character, DmgTypes.SKILL, GenshinData.ElementTypes.DENDRO,
-#         buffs=buffs
-#     )
-#     m2 = self.char_dmg(
-#         [atk_scaler_builder(2 * 1.2096), em_scaler_builder(2 * 2.4192)],
-#         character, DmgTypes.SKILL, GenshinData.ElementTypes.DENDRO,
-#         buffs=buffs
-#     )
-#     m3 = self.char_dmg(
-#         [atk_scaler_builder(3 * 1.2096), em_scaler_builder(3 * 2.4192)],
-#         character, DmgTypes.SKILL, GenshinData.ElementTypes.DENDRO,
-#         buffs=buffs
-#     )
-#     n1 = self.char_dmg(
-#         [atk_scaler_builder(.979)],
-#         character, DmgTypes.NORMAL, GenshinData.ElementTypes.DENDRO,
-#         buffs=buffs, reaction=Reactions.SPREAD
-#     )
-#     n2 = self.char_dmg(
-#         [atk_scaler_builder(1.0032)],
-#         character, DmgTypes.NORMAL, GenshinData.ElementTypes.DENDRO,
-#         buffs=buffs
-#     )
-#
-#     return q + e + n1 + n2 + m1 + n1 + n2 + m2 + n1 + n2 + m3
-
-# For Tighnari!!
-# def calc_dmg(self, character, account):
-#     """
-#     Calculates a damage number that is used as a heuristic for how good an artifact is
-#     :param character:
-#     :param account
-#     :return:
-#     """
-#
-#     buffs = [
-#         nahida_a1_builder(account.characters['Nahida']), thousand_dreams_builder(same=True), deepwood_4p,
-#         tighnari_c1, tighnari_c2, tighnari_a4_builder(character), tighnari_a1
-#
-#     ]
-#
-#     artifact_buff_quick_add['GildedDreams4'] = gildeddreams_4p_builder(same=1, diff=2)
-#     artifact_sets = collections.Counter([item['set'] for item in character.artifacts.values()])
-#     for set, number in artifact_sets.items():
-#         if number >= 2:
-#             buffs.append(artifact_buff_quick_add[set + '2'])
-#         if number >= 4:
-#             buffs.append(artifact_buff_quick_add[set + '4'])
-#
-#     q1 = self.char_dmg(
-#         [atk_scaler_builder(1.0012)],
-#         character, DmgTypes.BURST, GenshinData.ElementTypes.DENDRO,
-#         buffs=buffs
-#     )
-#     q1_spread = self.char_dmg(
-#         [atk_scaler_builder(1.0012)],
-#         character, DmgTypes.BURST, GenshinData.ElementTypes.DENDRO,
-#         buffs=buffs, reaction=Reactions.SPREAD
-#     )
-#     q2 = self.char_dmg(
-#         [atk_scaler_builder(1.2236)],
-#         character, DmgTypes.BURST, GenshinData.ElementTypes.DENDRO,
-#         buffs=buffs
-#     )
-#     q2_spread = self.char_dmg(
-#         [atk_scaler_builder(1.2236)],
-#         character, DmgTypes.BURST, GenshinData.ElementTypes.DENDRO,
-#         buffs=buffs, reaction=Reactions.SPREAD
-#     )
-#     c = self.char_dmg(
-#         [atk_scaler_builder(1.5696)],
-#         character, DmgTypes.BURST, GenshinData.ElementTypes.DENDRO,
-#         buffs=buffs, reaction=Reactions.SPREAD
-#     )
-#     c1 = self.char_dmg(
-#         [atk_scaler_builder(0.6948)],
-#         character, DmgTypes.BURST, GenshinData.ElementTypes.DENDRO,
-#         buffs=buffs
-#     )
-#
-#     return q1 * 4 + q1_spread * 2 + q2 * 4 + q2_spread * 2 + c + c1 * 4 + c + c1 * 4 + c + c1 *
-
-def char_dmg(talent_, stat_block, buffs, atk_type, element, reaction=Reactions.NONE):
-    # TODO calculate buffs
-    return reaction.calc_dmg(talent_, stat_block, atk_type, element)
-
-if __name__ == '__main__':
-    account = Account("resources/account_data/genshinData_GOOD_2024_04_22_20_23.json")
-    character = account.characters['KukiShinobu']
+def optimize(target, account, character, arti_set, offset_slot, verbose=False):
     weapons = [wep for wep in account.weapons.values()]
 
-    char_stats = OptimizerStatBlock.from_stat_block(character.stat_block).as_array()
-    artifact_stats = OptimizerStatBlock.from_stat_block(reduce(lambda c, n: c + n, [arti.total_stat_boost() for arti in character.artifacts.values()], StatBlock({}))).as_array()
-    weapons_stats = np.array([OptimizerStatBlock.from_stat_block(wep.stat_block).as_array() for wep in weapons], dtype=np.float64)
+    char_stats = torch.tensor(OptimizerStatBlock.from_stat_block(character.stat_block).as_array(), dtype=torch.float64)
 
-    weights = np.array([1 for _ in range(weapons_stats.shape[0])], dtype=np.float64)
+    artifact_options = artifact_filter_4p(account, arti_set, offset_slot)
+    artifacts = defaultdict(lambda: list())
+    for artifact in artifact_options:
+        artifacts[artifact.slot_key].append(artifact)
 
-    def forward(weights):
-        e_weights = np.exp(weights - np.max(weights))
-        final_weights = e_weights / e_weights.sum()
+    flower_stats = torch.stack([OptimizerStatBlock.from_stat_block(arti.total_stat_boost()).as_array() for arti in artifacts['flower']])
+    plume_stats = torch.stack([OptimizerStatBlock.from_stat_block(arti.total_stat_boost()).as_array() for arti in artifacts['plume']])
+    sands_stats = torch.stack([OptimizerStatBlock.from_stat_block(arti.total_stat_boost()).as_array() for arti in artifacts['sands']])
+    goblet_stats = torch.stack([OptimizerStatBlock.from_stat_block(arti.total_stat_boost()).as_array() for arti in artifacts['goblet']])
+    circlet_stats = torch.stack([OptimizerStatBlock.from_stat_block(arti.total_stat_boost()).as_array() for arti in artifacts['circlet']])
 
-        final_weapons_stats = np.multiply(final_weights[:, None], weapons_stats)
-        final_weapon_stats = np.sum(final_weapons_stats, axis=0)
+    # Fixed Initialization
+    # flower_weights = torch.tensor([1 for _ in range(flower_stats.shape[0])], dtype=torch.float64, requires_grad=True)
+    # plume_weights = torch.tensor([1 for _ in range(plume_stats.shape[0])], dtype=torch.float64, requires_grad=True)
+    # sands_weights = torch.tensor([1 for _ in range(sands_stats.shape[0])], dtype=torch.float64, requires_grad=True)
+    # goblet_weights = torch.tensor([1 for _ in range(goblet_stats.shape[0])], dtype=torch.float64, requires_grad=True)
+    # circlet_weights = torch.tensor([1 for _ in range(circlet_stats.shape[0])], dtype=torch.float64, requires_grad=True)
 
-        stats = char_stats + artifact_stats + final_weapon_stats
+    # Random Initialization
+    flower_weights = torch.rand(flower_stats.shape[0], requires_grad=True)
+    plume_weights = torch.rand(plume_stats.shape[0], requires_grad=True)
+    sands_weights = torch.rand(sands_stats.shape[0], requires_grad=True)
+    goblet_weights = torch.rand(goblet_stats.shape[0], requires_grad=True)
+    circlet_weights = torch.rand(circlet_stats.shape[0], requires_grad=True)
+
+    possible_weapons = [wep for wep in weapons if wep.weapon_class == character.weapon_class]
+    weapons_stats = torch.stack([OptimizerStatBlock.from_stat_block(wep.stat_block + wep.get_buffs()).as_array() for wep in possible_weapons])
+    weapon_weights = torch.tensor([1 for _ in range(weapons_stats.shape[0])], dtype=torch.float64, requires_grad=True)
+
+    def forward(weapon_weights, flower_weights, plume_weights, sands_weights, goblet_weights, circlet_weights):
+        final_weapon_stats = torch.sum(torch.mul(softmax(weapon_weights, dim=0)[:, None], weapons_stats), dim=0)
+
+        final_flower_stats = torch.sum(torch.mul(softmax(flower_weights, dim=0)[:, None], flower_stats), dim=0)
+        final_plume_stats = torch.sum(torch.mul(softmax(plume_weights, dim=0)[:, None], plume_stats), dim=0)
+        final_sands_stats = torch.sum(torch.mul(softmax(sands_weights, dim=0)[:, None], sands_stats), dim=0)
+        final_goblet_stats = torch.sum(torch.mul(softmax(goblet_weights, dim=0)[:, None], goblet_stats), dim=0)
+        final_circlet_stats = torch.sum(torch.mul(softmax(circlet_weights, dim=0)[:, None], circlet_stats), dim=0)
+
+        stats = char_stats + final_flower_stats + final_plume_stats + final_sands_stats + final_goblet_stats + final_circlet_stats + final_weapon_stats
 
         block = OptimizerStatBlock({})
         block._stats = stats
 
-        return calc_dmg(block, account)
+        return target.target_function(block, account)
 
-    grad_func = elementwise_grad(forward)
     lr = 0.1
-    epochs = 5
+    epochs = 20
+
+    dmg_hist = []
+    weapon_weights_hist = []
+    flower_weights_hist = []
+    plume_weights_hist = []
+    sands_weights_hist = []
+    goblet_weights_hist = []
+    circlet_weights_hist = []
+    weapon_weights_grad_hist = []
+    flower_weights_grad_hist = []
+    plume_weights_grad_hist = []
+    sands_weights_grad_hist = []
+    goblet_weights_grad_hist = []
+    circlet_weights_grad_hist = []
+
+    weapon_weights_hist.append(weapon_weights.detach().numpy())
+    flower_weights_hist.append(flower_weights.detach().numpy())
+    plume_weights_hist.append(plume_weights.detach().numpy())
+    sands_weights_hist.append(sands_weights.detach().numpy())
+    goblet_weights_hist.append(goblet_weights.detach().numpy())
+    circlet_weights_hist.append(circlet_weights.detach().numpy())
 
     for epoch in range(epochs):
-        grad = grad_func(weights)
-        weights = weights + lr * grad
+        dmg_value = forward(weapon_weights, flower_weights, plume_weights, sands_weights, goblet_weights, circlet_weights)
+        dmg_value.backward()
 
-    best_weapon = np.argmax(weights)
-    print(weapons[best_weapon].name)
+        if verbose:
+            print('*********** Epoch:', epoch, '***********')
+            print('Total dmg:', dmg_value.item())
+            print('weapon:', torch.mean(weapon_weights.grad))
+            print('flower:', torch.mean(flower_weights.grad))
+            print('plume:', torch.mean(plume_weights.grad))
+            print('sands:', torch.mean(sands_weights.grad))
+            print('goblet:', torch.mean(goblet_weights.grad))
+            print('circlet:', torch.mean(circlet_weights.grad))
 
+        dmg_hist.append(dmg_value.item())
+        weapon_weights_grad_hist.append(weapon_weights.grad.numpy())
+        flower_weights_grad_hist.append(flower_weights.grad.numpy())
+        plume_weights_grad_hist.append(plume_weights.grad.numpy())
+        sands_weights_grad_hist.append(sands_weights.grad.numpy())
+        goblet_weights_grad_hist.append(goblet_weights.grad.numpy())
+        circlet_weights_grad_hist.append(circlet_weights.grad.numpy())
 
+        weapon_weights = torch.tensor(weapon_weights + weapon_weights.grad * lr, requires_grad=True)
+        flower_weights = torch.tensor(flower_weights + flower_weights.grad * lr, requires_grad=True)
+        plume_weights = torch.tensor(plume_weights + plume_weights.grad * lr, requires_grad=True)
+        sands_weights = torch.tensor(sands_weights + sands_weights.grad * lr, requires_grad=True)
+        goblet_weights = torch.tensor(goblet_weights + goblet_weights.grad * lr, requires_grad=True)
+        circlet_weights = torch.tensor(circlet_weights + circlet_weights.grad * lr, requires_grad=True)
+
+        weapon_weights_hist.append(weapon_weights.detach().numpy())
+        flower_weights_hist.append(flower_weights.detach().numpy())
+        plume_weights_hist.append(plume_weights.detach().numpy())
+        sands_weights_hist.append(sands_weights.detach().numpy())
+        goblet_weights_hist.append(goblet_weights.detach().numpy())
+        circlet_weights_hist.append(circlet_weights.detach().numpy())
+
+    if verbose:
+        best_weapon = torch.argmax(weapon_weights)
+        print(possible_weapons[best_weapon].name)
+
+        best_flower = artifacts['flower'][torch.argmax(flower_weights)]
+        best_plume = artifacts['plume'][torch.argmax(plume_weights)]
+        best_sands = artifacts['sands'][torch.argmax(sands_weights)]
+        best_goblet = artifacts['goblet'][torch.argmax(goblet_weights)]
+        best_circlet = artifacts['circlet'][torch.argmax(circlet_weights)]
+
+        print('flower:', best_flower.sub_stats)
+        print('plume:', best_plume.sub_stats)
+        print('sands:', best_sands.main_stat, best_sands.sub_stats)
+        print('goblet:', best_goblet.main_stat, best_goblet.sub_stats)
+        print('circlet:', best_circlet.main_stat, best_circlet.sub_stats)
+
+        dmg_hist_df = pd.DataFrame({
+            'dmg_hist': dmg_hist,
+            'epoch': range(len(dmg_hist))
+        })
+        fig = px.line(dmg_hist_df, x='epoch', y='dmg_hist', title='Damage History')
+        fig.show()
+
+        fig = go.Figure()
+        for epoch, weights in enumerate(goblet_weights_grad_hist):
+            shade = 150 - (100 * epoch / len(goblet_weights_grad_hist))
+            fig.add_trace(go.Scatter(x=list(range(weights.shape[0])), y=weights, line={'color': 'rgb({r}, {g}, {b})'.format(r=shade, g=shade, b=shade)}))
+        fig.show()
+
+    ordered_weapons = sorted(zip(possible_weapons, weapon_weights.tolist()), key=lambda pair: pair[1], reverse=True)
+    ordered_flowers = sorted(zip(artifacts['flower'], flower_weights.tolist()), key=lambda pair: pair[1], reverse=True)
+    ordered_plumes = sorted(zip(artifacts['plume'], plume_weights.tolist()), key=lambda pair: pair[1], reverse=True)
+    ordered_sands = sorted(zip(artifacts['sands'], sands_weights.tolist()), key=lambda pair: pair[1], reverse=True)
+    ordered_goblets = sorted(zip(artifacts['goblet'], goblet_weights.tolist()), key=lambda pair: pair[1], reverse=True)
+    ordered_circlets = sorted(zip(artifacts['circlet'], circlet_weights.tolist()), key=lambda pair: pair[1], reverse=True)
+
+    return (
+        ordered_weapons,
+        ordered_flowers,
+        ordered_plumes,
+        ordered_sands,
+        ordered_goblets,
+        ordered_circlets,
+
+        dmg_hist,
+
+        weapon_weights_hist,
+        flower_weights_hist,
+        plume_weights_hist,
+        sands_weights_hist,
+        goblet_weights_hist,
+        circlet_weights_hist,
+
+        weapon_weights_grad_hist,
+        flower_weights_grad_hist,
+        plume_weights_grad_hist,
+        sands_weights_grad_hist,
+        goblet_weights_grad_hist,
+        circlet_weights_grad_hist
+    )
+
+# if __name__ == '__main__':
+#     optimize()

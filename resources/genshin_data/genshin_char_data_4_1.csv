@@ -1,83 +1,89 @@
-Name,HP,ATK,DEF,Ascension Attributes,Ascension Stat
-Albedo,13225,251,876,Geo DMG,28.8%
-Alhaitham,13348,313,781,Dendro DMG,28.8%
-Aloy,10898,233,676,Cryo DMG,28.8%
-Amber,9461,223,600,ATK,24.0%
-Ayaka,12858,342,783,CRIT DMG,38.4%
-Ayato,13715,298,768,CRIT DMG,38.4%
-Baizhu,13348,192,499,HP,28.8%
-Barbara,9787,159,668,HP,24.0%
-Beidou,13049,225,648,Electro DMG,24.0%
-Bennett,12397,191,771,Energy Recharge,26.8%
-Candace,10874,212,682,HP,24.0%
-Charlotte,10766,173,546,ATK,24.0%
-Chevreuse,11962,193,605,HP,24.0%
-Chongyun,10983,223,648,ATK,24.0%
-Collei,9787,199,600,ATK,24.0%
-Cyno,12490,318,859,CRIT DMG,24.0%
-Dehya,15674,265,627,HP,28.8%
-Diluc,12980,334,783,CRIT Rate,19.2%
-Diona,9569,212,600,Cryo DMG,24.0%
-Dori,12397,223,723,HP,24.0%
-Eula,13225,342,750,CRIT DMG,38.4%
-Faruzan,9569,196,627,ATK,24.0%
-Fischl,9189,244,593,ATK,24.0%
-Freminet,12071,254.88,708.46,ATK,24.0%
-Furina,15307,244,696,CRIT RATE,19.2%
-Gaming,11418,301,703,ATK,24.0%
-Ganyu,9796,334,630,CRIT DMG,38.4%
-Gorou,9569,182,648,Geo DMG,24.0%
-ShikanoinHeizou,10657,225,683,Anemo DMG,24.0%
-HuTao,15552,106,876,CRIT DMG,38.4%
-AratakiItto,12858,227,959,CRIT Rate,19.2%
-Jean,14695,239,768,Healing,22.0%
-Kaeya,11636,223,791,Energy Recharge,26.8%
-Kaveh,11962,233,750,Elemental Mastery,96.0
-KaedeharaKazuha,13348,296,806,Elemental Mastery,115.2
-Keqing,13103,322,799,CRIT DMG,38.4%
-Kirara,12179,223,546,HP,24.0%
-Klee,10286,310,614,Pyro DMG,28.8%
-SangonomiyaKokomi,13470,234,657,Hydro DMG,28.8%
-KujouSara,9569,195,627,ATK,24.0%
-Layla,11092,216,655,HP,24.0%
-Lisa,9569,231,573,Elemental Mastery,96
-Lynette,12397,231.51,711.87,Anemo DMG,24%
-Lyney,11021,318.11,537.99,CRIT Rate,19.2%
-Mika,12506,223,713,HP,24.0%
-Mona,10409,287,653,Energy Recharge,32.0%
-Nahida,10360,298,630,Elemental Mastery,115.2
-Navia,12650,351,793,CRIT DMG,38.4%
-Neuvillette,14695,208.32,576.42,CRIT DMG,38.4%
-Nilou,15184,229,728,HP,28.8%
-Ningguang,9787,212,573,Geo DMG,24.0%
-Noelle,12071,191,798,DEF,30.0%
-Qiqi,12368,287,922,Healing,22.0%
-RaidenShogun,12907,337,789,Energy Recharge,32.0%
-Razor,11962,233,750,Physical DMG,30.0%
-Rosaria,12288,240,709,ATK,24.0%
-Sayu,11853,244,744,Elemental Mastery,96
-Shenhe,12992,303,830,ATK,28.8%
-KukiShinobu,12288,212,750,HP,24.0%
-Sucrose,9243,169,702,Anemo DMG,24.0%
-Tartaglia,13103,301,814,Hydro DMG,28.8%
-Thoma,10331,201,750,ATK,24.0%
-Tighnari,10849,267,630,Dendro DMG,28.8%
-TravelerGeo,10874,212,682,ATK,24.0%
-TravelerAnemo,10874,212,682,ATK,24.0%
-TravelerElectro,10874,212,682,ATK,24.0%
-TravelerDendro,10874,212,682,ATK,24.0%
-TravelerHydro,10874,212,682,ATK,24.0%
-Venti,10531,263,669,Energy Recharge,32%
-Wanderer,10164,327,607,CRIT Rate,19.2%
-Xiangling,10874,225,668,Elemental Mastery,96.0
-Xiao,12735,349,799,CRIT Rate,19.2%
-Xingqiu,10222,201,757,ATK,24.0%
-Xinyan,11201,248,798,ATK,24.0%
-YaeMiko,10372,339,568,CRIT Rate,19.2%
-Yanfei,9352,240,586,Pyro DMG,24.0%
-Yaoyao,12288,212,750,HP,24.0%
-Yelan,14450,243,547,CRIT Rate,19.2%
-Yoimiya,10164,322,614,CRIT Rate,19.2%
-YunJin,10657,191,734,Energy Recharge,26.8%
-Zhongli,14695,251,737,Geo DMG,28.8%
-Xianyun,10409,334,572,ATK,28.8%
+Name,HP,ATK,DEF,Ascension Attributes,Ascension Stat,Element,Weapon
+Albedo,13225,251,876,Geo DMG,28.8%,geo,sword
+Alhaitham,13348,313,781,Dendro DMG,28.8%,dendro,sword
+Aloy,10898,233,676,Cryo DMG,28.8%,cryo,bow
+Amber,9461,223,600,ATK,24.0%,pyro,bow
+Ayaka,12858,342,783,CRIT DMG,38.4%,cryo,sword
+Ayato,13715,298,768,CRIT DMG,38.4%,hydro,sword
+Baizhu,13348,192,499,HP,28.8%,dendro,catalyst
+Barbara,9787,159,668,HP,24.0%,hydro,catalyst
+Beidou,13049,225,648,Electro DMG,24.0%,electro,claymore
+Bennett,12397,191,771,Energy Recharge,26.8%,pyro,sword
+Candace,10874,212,682,HP,24.0%,hydro,polearm
+Charlotte,10766,173,546,ATK,24.0%,cryo,catalyst
+Chevreuse,11962,193,605,HP,24.0%,pyro,polearm
+Chongyun,10983,223,648,ATK,24.0%,cryo,claymore
+Collei,9787,199,600,ATK,24.0%,dendro,bow
+Cyno,12490,318,859,CRIT DMG,24.0%,electro,polearm
+Dehya,15674,265,627,HP,28.8%,pyro,claymore
+Diluc,12980,334,783,CRIT Rate,19.2%,pyro,claymore
+Diona,9569,212,600,Cryo DMG,24.0%,cryo,bow
+Dori,12397,223,723,HP,24.0%,electro,claymore
+Eula,13225,342,750,CRIT DMG,38.4%,cryo,claymore
+Faruzan,9569,196,627,ATK,24.0%,anemo,bow
+Fischl,9189,244,593,ATK,24.0%,electro,bow
+Freminet,12071,254.88,708.46,ATK,24.0%,cryo,claymore
+Furina,15307,244,696,CRIT RATE,19.2%,hydro,sword
+Gaming,11418,301,703,ATK,24.0%,pyro,claymore
+Ganyu,9796,334,630,CRIT DMG,38.4%,cryo,bow
+Gorou,9569,182,648,Geo DMG,24.0%,geo,bow
+ShikanoinHeizou,10657,225,683,Anemo DMG,24.0%,anemo,catalyst
+HuTao,15552,106,876,CRIT DMG,38.4%,pyro,polearm
+AratakiItto,12858,227,959,CRIT Rate,19.2%,geo,claymore
+Jean,14695,239,768,Healing,22.0%,anemo,sword
+Kaeya,11636,223,791,Energy Recharge,26.8%,cryo,sword
+Kaveh,11962,233,750,Elemental Mastery,96.0,dendro,claymore
+KaedeharaKazuha,13348,296,806,Elemental Mastery,115.2,anemo,sword
+Keqing,13103,322,799,CRIT DMG,38.4%,electro,sword
+Kirara,12179,223,546,HP,24.0%,dendro,sword
+Klee,10286,310,614,Pyro DMG,28.8%,pyro,catalyst
+SangonomiyaKokomi,13470,234,657,Hydro DMG,28.8%,hydro,catalyst
+KujouSara,9569,195,627,ATK,24.0%,electro,bow
+Layla,11092,216,655,HP,24.0%,cryo,sword
+Lisa,9569,231,573,Elemental Mastery,96,electro,catalyst
+Lynette,12397,231.51,711.87,Anemo DMG,24%,anemo,sword
+Lyney,11021,318.11,537.99,CRIT Rate,19.2%,pyro,bow
+Mika,12506,223,713,HP,24.0%,cryo,polearm
+Mona,10409,287,653,Energy Recharge,32.0%,hydro,catalyst
+Nahida,10360,298,630,Elemental Mastery,115.2,dendro,catalyst
+Navia,12650,351,793,CRIT DMG,38.4%,geo,claymore
+Neuvillette,14695,208.32,576.42,CRIT DMG,38.4%,hydro,catalyst
+Nilou,15184,229,728,HP,28.8%,hydro,sword
+Ningguang,9787,212,573,Geo DMG,24.0%,geo,catalyst
+Noelle,12071,191,798,DEF,30.0%,geo,claymore
+Qiqi,12368,287,922,Healing,22.0%,cryo,sword
+RaidenShogun,12907,337,789,Energy Recharge,32.0%,electro,polearm
+Razor,11962,233,750,Physical DMG,30.0%,electro,claymore
+Rosaria,12288,240,709,ATK,24.0%,cryo,polearm
+Sayu,11853,244,744,Elemental Mastery,96,anemo,claymore
+Shenhe,12992,303,830,ATK,28.8%,cryo,polearm
+KukiShinobu,12288,212,750,HP,24.0%,electro,sword
+Sucrose,9243,169,702,Anemo DMG,24.0%,anemo,catalyst
+Tartaglia,13103,301,814,Hydro DMG,28.8%,hydro,bow
+Thoma,10331,201,750,ATK,24.0%,pyro,polearm
+Tighnari,10849,267,630,Dendro DMG,28.8%,dendro,bow
+TravelerGeo,10874,212,682,ATK,24.0%,geo,sword
+TravelerAnemo,10874,212,682,ATK,24.0%,anemo,sword
+TravelerElectro,10874,212,682,ATK,24.0%,electro,sword
+TravelerDendro,10874,212,682,ATK,24.0%,dendro,sword
+TravelerHydro,10874,212,682,ATK,24.0%,hydro,sword
+Venti,10531,263,669,Energy Recharge,32%,anemo,bow
+Wanderer,10164,327,607,CRIT Rate,19.2%,anemo,catalyst
+Xiangling,10874,225,668,Elemental Mastery,96.0,pyro,polearm
+Xiao,12735,349,799,CRIT Rate,19.2%,anemo,polearm
+Xingqiu,10222,201,757,ATK,24.0%,hydro,sword
+Xinyan,11201,248,798,ATK,24.0%,pyro,claymore
+YaeMiko,10372,339,568,CRIT Rate,19.2%,elecro,catalyst
+Yanfei,9352,240,586,Pyro DMG,24.0%,pyro,catalyst
+Yaoyao,12288,212,750,HP,24.0%,dendro,polearm
+Yelan,14450,243,547,CRIT Rate,19.2%,hydro,bow
+Yoimiya,10164,322,614,CRIT Rate,19.2%,pyro,bow
+YunJin,10657,191,734,Energy Recharge,26.8%,geo,polearm
+Zhongli,14695,251,737,Geo DMG,28.8%,geo,polearm
+Xianyun,10409,334,572,ATK,28.8%,anemo,catalyst
+Citlali,11633.62,126.76,763.17,Elemental Mastery,115.2,cryo,catalyst
+Arlecchino,13103.12,342.03,764.71,CRIT DMG,38.4%,pyro,polearm
+Kachina,11799.28,216.65,792.41,Geo DMG,24.0%,geo,polearm
+Xilonen,12408.11,275.06,929.95,DEF,36.0%,geo,sword
+Ororon,9243.68,244.26,586.97,ATK,24.0%,electro,bow
+LanYan,9243.68,250.63,580.14,ATK,24.0%,anemo,catalyst

@@ -1,18 +1,13 @@
-import os
-import re
 from enum import Enum
-import copy
 
 from genshin_data import GenshinData
-from reactions import ReactionBonuses, Reactions
 from stat_block import StatBlock
 from utils import load_json_data
 
 from artifact import Artifact
-from weapon import Weapon
+from weapon import Weapon, GenericWeapon
 
 char_data = GenshinData.load_char_data('resources/genshin_data/genshin_char_data_4_1.csv')
-
 
 character_cache = dict()
 
@@ -28,11 +23,13 @@ class Account:
 
         weapons = account_data['weapons']
         self.weapons = {}
+        known_weapons = {wep_cls.__name__:wep_cls for wep_cls in Weapon.__subclasses__()}
         for raw_wep in weapons:
-            weapon = Weapon(
-                raw_wep['id'], raw_wep['key'],
-                raw_wep['level'], raw_wep['ascension'], raw_wep['refinement'],
-            )
+            wep_name = raw_wep['key']
+            if wep_name in known_weapons:
+                weapon = known_weapons[wep_name](raw_wep['id'], raw_wep['level'], raw_wep['ascension'], raw_wep['refinement'])
+            else:
+                weapon = GenericWeapon(raw_wep['id'], wep_name, raw_wep['level'], raw_wep['ascension'], raw_wep['refinement'])
             self.weapons[weapon.id] = weapon
             if raw_wep['location'] != '':
                 weapon.add_location(raw_wep['location'])
@@ -58,6 +55,8 @@ class Character:
         self.weapon = weapon
 
         self._raw_data = raw_data
+        self.element = raw_data['Element']
+        self.weapon_class = raw_data['Weapon']
 
         self.stat_block = StatBlock({
             'base_atk': raw_data["ATK"],
