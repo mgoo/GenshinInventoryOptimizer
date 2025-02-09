@@ -42,7 +42,7 @@
                     <span class="input-group-text" id="arti-set-label">Artifact Set</span>
                     <select class="form-select" aria-describedby="arti-set-label" id="arti-set">
                         {% for set in sets %}
-                            <option value="{{ set }}">{{ set }}</option>
+                            <option value="{{ set }}" {% if set == character.get_artifact_sets()[0] %}selected{% endif %} >{{ set }}</option>
                         {% endfor %}
                     </select>
                 </div>

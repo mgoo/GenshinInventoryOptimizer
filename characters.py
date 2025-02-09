@@ -1,3 +1,4 @@
+from collections import Counter
 from enum import Enum
 
 from genshin_data import GenshinData
@@ -103,6 +104,14 @@ class Character:
 
         # TODO handle set bonus??
         self.artifacts[artifact.slot_key] = artifact
+
+    def get_artifact_sets(self):
+        arti_sets = Counter([arti.set_key for arti in self.artifacts.values()])
+        result = []
+        for set_key, count in arti_sets.items():
+            if count >= 2:
+                result.append(set_key)
+        return result
 
 
 class Party:
