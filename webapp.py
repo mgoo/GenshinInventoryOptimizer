@@ -1,6 +1,11 @@
 import random
 import os
 
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+from plotly import graph_objects as go
+
 from flask import Flask, render_template, render_template_string, url_for, request, jsonify
 
 from characters import Account
@@ -138,8 +143,65 @@ def optimize(account_id, character_id):
     goblet_html = render_template_string(arti_template, slot='goblet', arti=ordered_goblets[0][0], readable=readable, readable_value=readable_value)
     circlet_html = render_template_string(arti_template, slot='circlet', arti=ordered_circlets[0][0], readable=readable, readable_value=readable_value)
 
+    num_epochs = len(dmg_hist)
+    epochs = list(range(num_epochs))
+
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(y=dmg_hist, x=epochs, line=go.scatter.Line())
+    )
+    fig.update_yaxes(title_text='Dmg')
+    fig.update_xaxes(title_text='Epoch')
+    fig.update_layout(title_text='Damage History')
+    dmg_dist_json = fig.to_json()
+
+    wep_names = []
+    for wep_idx in range(weapon_weights_hist[0].shape[0]):
+        for weapon, weight, idx in ordered_weapons:
+            if idx == wep_idx:
+                if weapon.name not in wep_names:
+                    wep_names.append(weapon.name)
+                else:
+                    wep_names.append(weapon.name + '_' + str(wep_idx))
+                break
+
+    fig = go.Figure()
+    for epoch in epochs:
+        fig.add_trace(
+            go.Bar(
+                y=weapon_weights_hist[epoch].tolist(), x=wep_names,
+                visible=(epoch == 0),
+            )
+        )
+    steps = []
+    for i in range(len(fig.data)):
+        step = {
+            'method': 'update',
+            'args': [
+                {'visible': [i == j for j in range(len(fig.data))]},
+                {'title': 'Epoch {0}'.format(i)}
+            ]
+        }
+        steps.append(step)
+
+    slider = [{
+        'active': 0,
+        'currentvalue': {'prefix': 'Epoch '},
+        'steps': steps,
+        'pad': {'t': 150}
+    }]
+    fig.update_layout(
+        sliders=slider,
+        barmode='group',
+        height=800,
+        xaxis={'tickangle': -45}
+    )
+    wep_weight_hist_json = fig.to_json()
+
     return jsonify(
-        best_loadout=weapon_html+flower_html+plume_html+sands_html+goblet_html+circlet_html
+        best_loadout=weapon_html+flower_html+plume_html+sands_html+goblet_html+circlet_html,
+        dmg_hist=dmg_dist_json,
+        wep_weight_hist=wep_weight_hist_json
     )
 
 

@@ -59,8 +59,16 @@
             </div>
             <input type="submit" id="optimize">
         </form>
-        <div  style="display: flex;flex-wrap: wrap;width: 100%" id="optimizer-results">
+        <div style="display: flex;flex-wrap: wrap;width: 100%" id="optimizer-results">
 
+        </div>
+        <div id="graphs">
+            <div id="dmg-hist">
+
+            </div>
+            <div id="wep-weight-hist">
+
+            </div>
         </div>
     </div>
 </div>
@@ -80,8 +88,15 @@
                     offset_slot: $('#offset').find(':selected').val()
                 }
             }).done(function(data) {
-                console.log(data);
-                $('#optimizer-results').html(data['best_loadout'])
+                $('#optimizer-results').html(data['best_loadout']);
+
+                let dmg_hist = JSON.parse(data.dmg_hist);
+                Plotly.newPlot('dmg-hist', dmg_hist.data, dmg_hist.layout);
+
+                let wep_weight_hist = JSON.parse(data.wep_weight_hist);
+                Plotly.newPlot('wep-weight-hist', wep_weight_hist.data, wep_weight_hist.layout);
+
+
                 return true;
             });
 

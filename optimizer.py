@@ -84,7 +84,7 @@ def artifact_filter_4p(account, set, offset_slot):
 def optimize(target, account, character, arti_set, offset_slot, verbose=False):
     weapons = [wep for wep in account.weapons.values()]
 
-    char_stats = torch.tensor(OptimizerStatBlock.from_stat_block(character.stat_block).as_array(), dtype=torch.float64)
+    char_stats = OptimizerStatBlock.from_stat_block(character.stat_block).as_array()
 
     artifact_options = artifact_filter_4p(account, arti_set, offset_slot)
     artifacts = defaultdict(lambda: list())
@@ -131,7 +131,7 @@ def optimize(target, account, character, arti_set, offset_slot, verbose=False):
 
         return target.target_function(block, account)
 
-    lr = 0.1
+    lr = 0.001
     epochs = 20
 
     dmg_hist = []
@@ -177,12 +177,19 @@ def optimize(target, account, character, arti_set, offset_slot, verbose=False):
         goblet_weights_grad_hist.append(goblet_weights.grad.numpy())
         circlet_weights_grad_hist.append(circlet_weights.grad.numpy())
 
-        weapon_weights = torch.tensor(weapon_weights + weapon_weights.grad * lr, requires_grad=True)
-        flower_weights = torch.tensor(flower_weights + flower_weights.grad * lr, requires_grad=True)
-        plume_weights = torch.tensor(plume_weights + plume_weights.grad * lr, requires_grad=True)
-        sands_weights = torch.tensor(sands_weights + sands_weights.grad * lr, requires_grad=True)
-        goblet_weights = torch.tensor(goblet_weights + goblet_weights.grad * lr, requires_grad=True)
-        circlet_weights = torch.tensor(circlet_weights + circlet_weights.grad * lr, requires_grad=True)
+        # weapon_weights = torch.tensor(weapon_weights.clone().detach() + weapon_weights.grad * lr, requires_grad=True)
+        # flower_weights = torch.tensor(flower_weights.clone().detach() + flower_weights.grad * lr, requires_grad=True)
+        # plume_weights = torch.tensor(plume_weights.clone().detach() + plume_weights.grad * lr, requires_grad=True)
+        # sands_weights = torch.tensor(sands_weights.clone().detach() + sands_weights.grad * lr, requires_grad=True)
+        # goblet_weights = torch.tensor(goblet_weights.clone().detach() + goblet_weights.grad * lr, requires_grad=True)
+        # circlet_weights = torch.tensor(circlet_weights.clone().detach() + circlet_weights.grad * lr, requires_grad=True)
+
+        weapon_weights = (weapon_weights.clone().detach() + weapon_weights.grad * lr).requires_grad_(True)
+        flower_weights = (flower_weights.clone().detach() + flower_weights.grad * lr).requires_grad_(True)
+        plume_weights = (plume_weights.clone().detach() + plume_weights.grad * lr).requires_grad_(True)
+        sands_weights = (sands_weights.clone().detach() + sands_weights.grad * lr).requires_grad_(True)
+        goblet_weights = (goblet_weights.clone().detach() + goblet_weights.grad * lr).requires_grad_(True)
+        circlet_weights = (circlet_weights.clone().detach() + circlet_weights.grad * lr).requires_grad_(True)
 
         weapon_weights_hist.append(weapon_weights.detach().numpy())
         flower_weights_hist.append(flower_weights.detach().numpy())
@@ -207,25 +214,18 @@ def optimize(target, account, character, arti_set, offset_slot, verbose=False):
         print('goblet:', best_goblet.main_stat, best_goblet.sub_stats)
         print('circlet:', best_circlet.main_stat, best_circlet.sub_stats)
 
-        dmg_hist_df = pd.DataFrame({
-            'dmg_hist': dmg_hist,
-            'epoch': range(len(dmg_hist))
-        })
-        fig = px.line(dmg_hist_df, x='epoch', y='dmg_hist', title='Damage History')
-        fig.show()
-
         fig = go.Figure()
         for epoch, weights in enumerate(goblet_weights_grad_hist):
             shade = 150 - (100 * epoch / len(goblet_weights_grad_hist))
             fig.add_trace(go.Scatter(x=list(range(weights.shape[0])), y=weights, line={'color': 'rgb({r}, {g}, {b})'.format(r=shade, g=shade, b=shade)}))
         fig.show()
 
-    ordered_weapons = sorted(zip(possible_weapons, weapon_weights.tolist()), key=lambda pair: pair[1], reverse=True)
-    ordered_flowers = sorted(zip(artifacts['flower'], flower_weights.tolist()), key=lambda pair: pair[1], reverse=True)
-    ordered_plumes = sorted(zip(artifacts['plume'], plume_weights.tolist()), key=lambda pair: pair[1], reverse=True)
-    ordered_sands = sorted(zip(artifacts['sands'], sands_weights.tolist()), key=lambda pair: pair[1], reverse=True)
-    ordered_goblets = sorted(zip(artifacts['goblet'], goblet_weights.tolist()), key=lambda pair: pair[1], reverse=True)
-    ordered_circlets = sorted(zip(artifacts['circlet'], circlet_weights.tolist()), key=lambda pair: pair[1], reverse=True)
+    ordered_weapons = sorted(zip(possible_weapons, weapon_weights.tolist(), list(range(len(possible_weapons)))), key=lambda pair: pair[1], reverse=True)
+    ordered_flowers = sorted(zip(artifacts['flower'], flower_weights.tolist(), list(range(len(artifacts['flower'])))), key=lambda pair: pair[1], reverse=True)
+    ordered_plumes = sorted(zip(artifacts['plume'], plume_weights.tolist(), list(range(len(artifacts['plume'])))), key=lambda pair: pair[1], reverse=True)
+    ordered_sands = sorted(zip(artifacts['sands'], sands_weights.tolist(), list(range(len(artifacts['sands'])))), key=lambda pair: pair[1], reverse=True)
+    ordered_goblets = sorted(zip(artifacts['goblet'], goblet_weights.tolist(), list(range(len(artifacts['goblet'])))), key=lambda pair: pair[1], reverse=True)
+    ordered_circlets = sorted(zip(artifacts['circlet'], circlet_weights.tolist(), list(range(len(artifacts['circlet'])))), key=lambda pair: pair[1], reverse=True)
 
     return (
         ordered_weapons,
